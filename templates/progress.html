@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block page_title %}Your Progress{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h3>Kanji Mastery Overview</h3>
+        <p>Here is a list of all the Kanji in your study deck and their current status.</p>
+        
+        {% if all_kanji %}
+            <table class="progress-table">
+                <thead>
+                    <tr>
+                        <th>Kanji</th>
+                        <th>Meaning</th>
+                        <th>Reviews</th>
+                        <th>Next Review Date</th>
+                        <th>Interval (Days)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kanji in all_kanji %}
+                        <tr>
+                            <td class="kanji-char">{{ kanji.character }}</td>
+                            <td>{{ kanji.meaning }}</td>
+                            <td>{{ kanji.reviews }}</td>
+                            <td>{{ kanji.next_review_date.strftime('%Y-%m-%d') if kanji.next_review_date else 'Not Reviewed' }}</td>
+                            <td>{{ kanji.interval_days|round(1) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>You haven't added or imported any Kanji yet. <a href="/dashboard">Go to the dashboard to import some!</a></p>
+        {% endif %}
+    </div>
+{% endblock %}

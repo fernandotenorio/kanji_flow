@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block page_title %}Add New Kanji{% endblock %}
+
+{% block content %}
+    <div class="card form-card">
+        <h3>Manually Add Kanji</h3>
+        {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
+        <form action="/add_kanji" method="post">
+            <div class="form-group">
+                <label for="character">Kanji Character:</label>
+                <input type="text" id="character" name="character" required>
+            </div>
+            <div class="form-group">
+                <label for="meaning">Meaning:</label>
+                <input type="text" id="meaning" name="meaning" required>
+            </div>
+            <div class="form-group">
+                <label for="onyomi">Onyomi (optional):</label>
+                <input type="text" id="onyomi" name="onyomi">
+            </div>
+            <div class="form-group">
+                <label for="kunyomi">Kunyomi (optional):</label>
+                <input type="text" id="kunyomi" name="kunyomi">
+            </div>
+            <div class="form-group">
+                <label for="grade">Grade (optional):</label>
+                <input type="number" id="grade" name="grade" min="1">
+            </div>
+            <div class="form-group">
+                <label for="stroke_count">Stroke Count (optional):</label>
+                <input type="number" id="stroke_count" name="stroke_count" min="1">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Kanji</button>
+        </form>
+    </div>
+{% endblock %}

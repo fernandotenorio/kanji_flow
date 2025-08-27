@@ -1,0 +1,5 @@
+fastapi==0.116.1
+sqlalchemy
+jinja2
+python-multipart
+uvicorn

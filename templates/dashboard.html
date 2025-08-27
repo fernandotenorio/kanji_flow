@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+    <div class="dashboard-grid">
+        <div class="card stat-card">
+            <h3>Total Kanji</h3>
+            <p>{{ total_kanji }}</p>
+        </div>
+        <div class="card stat-card">
+            <h3>Kanji for Review Today</h3>
+            <p>{{ kanji_for_review_count }}</p>
+        </div>
+        <div class="card stat-card">
+            <h3>Mastery</h3>
+            <p>{{ mastery_percentage }}%</p>
+        </div>
+        <div class="card full-width-card">
+            <h3>Import Kanji</h3>
+            <p>You can import Kanji from a structured file (JSON or CSV).</p>
+            <form action="/import_kanji" method="post">
+                <button type="submit" class="btn btn-primary">Import Top 100 Kanji (JSON)</button>
+            </form>
+            <p style="margin-top: 10px;">Alternatively, add them manually via the "Add Kanji" page.</p>
+        </div>
+        <!-- More progress graphs/charts could go here -->
+    </div>
+{% endblock %}

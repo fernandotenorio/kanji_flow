@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanji Flow</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <!-- You can find an icon from a site like flaticon.com or use an emoji -->
+                <span>漢字 Kanji Flow</span>
+            </div>
+            <nav>
+                <ul>
+                    <!-- The Font Awesome icons (<i> tags) won't show without a kit, but the links work -->
+                    <li><a href="/study">Study</a></li>
+                    <li><a href="/dashboard">Dashboard</a></li>                    
+                    <li><a href="/progress">Progress</a></li>
+                    <li><a href="/settings">Settings</a></li>
+                    <li><a href="/add_kanji">Add Kanji</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="content">
+            <header class="header">
+                <h1>{% block page_title %}{% endblock %}</h1>
+            </header>
+            <div class="main-content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    <script src="/static/js/app.js"></script>
+    
+    <!-- THIS IS THE LINE YOU NEED TO ADD -->
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

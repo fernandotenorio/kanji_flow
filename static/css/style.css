@@ -1,0 +1,276 @@
+/* --- UNIVERSAL SETTINGS --- */
+/* Use a more intuitive sizing model and reset default margin */
+* {
+    box-sizing: border-box;
+    margin: 0;
+}
+
+/* --- GENERAL BODY STYLES --- */
+body {
+    font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+    background-color: #f4f7f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* --- CORE LAYOUT FIX (USING FLEXBOX) --- */
+/*
+    This is the main fix. We turn the container into a flexbox container.
+    This makes the sidebar and content aware of each other, preventing any overlap.
+*/
+.container {
+    display: flex;
+}
+
+/*
+    The sidebar is now a flex item.
+    - We remove `position: fixed`.
+    - `flex-shrink: 0` prevents it from being squished on smaller screens.
+    - `width` is now percentage-based but with min/max values for usability.
+    - `position: sticky` keeps it visible as you scroll the main content.
+*/
+.sidebar {
+    width: 20%; /* Responsive width */
+    max-width: 290px; /* Won't get too big on large screens */
+    min-width: 240px; /* Won't get too small and break */
+    flex-shrink: 0;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    height: 100vh; /* Full height of the viewport */
+    padding: 20px;
+    position: sticky; /* Sticks to the top when scrolling */
+    top: 0;
+}
+
+/*
+    The content area is the other flex item.
+    - We remove the `margin-left` hack.
+    - `flex-grow: 1` tells it to take up ALL remaining horizontal space.
+    - `overflow-y: auto` ensures only the content area scrolls, not the whole page.
+*/
+.content {
+    flex-grow: 1;
+    padding: 20px;
+    height: 100vh;
+    overflow-y: auto;
+}
+/* --- END OF CORE LAYOUT FIX --- */
+
+
+/* --- SIDEBAR STYLES --- */
+.sidebar .logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.sidebar .logo img {
+    width: 40px;
+    margin-right: 10px;
+}
+
+.sidebar .logo span {
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+.sidebar nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar nav ul li a {
+    color: #ecf0f1;
+    text-decoration: none;
+    display: block;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    transition: background-color 0.3s;
+}
+
+.sidebar nav ul li a:hover,
+.sidebar nav ul li a.active {
+    background-color: #34495e;
+}
+
+.sidebar nav ul li a i {
+    margin-right: 10px;
+}
+
+
+/* --- MAIN CONTENT STYLES --- */
+.header h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+    padding-bottom: 10px;
+}
+
+.card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.stat-card h3 {
+    margin-top: 0;
+    color: #34495e;
+}
+
+.stat-card p {
+    font-size: 2em;
+    font-weight: 700;
+    color: #2980b9;
+    margin: 0;
+}
+
+.full-width-card {
+    grid-column: 1 / -1;
+}
+
+.form-card {
+    max-width: 600px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
+/* --- BUTTON STYLES --- */
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.btn-primary { background-color: #3498db; color: white; }
+.btn-secondary { background-color: #95a5a6; color: white; }
+.btn-success { background-color: #2ecc71; color: white; }
+.btn-warning { background-color: #f1c40f; color: white; }
+.btn-danger { background-color: #e74c3c; color: white; }
+
+
+/* --- STUDY PAGE --- */
+.kanji-card-container {
+    text-align: center;
+}
+
+.kanji-card {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    display: inline-block;
+    min-width: 300px;
+}
+
+.kanji-character {
+    font-size: 100px;
+    margin-bottom: 20px;
+}
+
+.kanji-meaning {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.review-buttons {
+    margin-top: 20px;
+}
+
+.reviews-left {
+    text-align: center;
+    margin-top: 20px;
+    color: #7f8c8d;
+}
+
+
+/* --- MISC STYLES --- */
+.empty-state {
+    text-align: center;
+    padding: 50px;
+    background: white;
+    border-radius: 8px;
+}
+
+.message {
+    padding: 10px;
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.welcome-buttons a {
+    margin-top: 20px;
+}
+
+.progress-chart-placeholder {
+    height: 200px;
+    background: #ecf0f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+
+/* --- PROGRESS PAGE TABLE --- */
+.progress-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.progress-table th,
+.progress-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.progress-table th {
+    background-color: #f4f7f9;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.progress-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.progress-table .kanji-char {
+    font-size: 1.5em;
+    font-family: 'Noto Sans JP', sans-serif;
+}
