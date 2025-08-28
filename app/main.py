@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 import sqlite3
 import json
 from datetime import date
+from typing import Optional, Dict, Any
 
 from app import crud, models
 from app.database import get_db, create_tables
@@ -109,8 +110,16 @@ async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = De
     if not deck:
         return RedirectResponse(url="/decks")
 
-    cards_to_review = crud.get_cards_for_review(db, deck_id, date.today())
-
+    # --- SETTINGS LOGIC ---
+    # Get global settings as fallbacks
+    global_max_reviews = int(crud.get_setting(db, "max_reviews_per_day") or "20")
+    # Determine the effective setting: deck-specific, or global if not set
+    effective_max_reviews = deck.max_reviews_per_day or global_max_reviews
+    
+    # Use the effective setting in the CRUD call
+    cards_to_review = crud.get_cards_for_review(db, deck_id, date.today(), limit=effective_max_reviews)
+    
+    # (The rest of the function is the same...)
     if not cards_to_review:
         return templates.TemplateResponse(
             "study.html",
@@ -121,16 +130,13 @@ async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = De
                 "message": "No cards to review in this deck today. Well done!"
             }
         )
-
     current_card = cards_to_review[0]
-
     return templates.TemplateResponse(
         "study.html",
         {
             "request": request,
             "deck": deck,
             "current_card": current_card,
-            # We are NOT passing 'rendered_card_html' anymore.
             "total_reviews_today": len(cards_to_review)
         }
     )
@@ -180,6 +186,56 @@ async def deck_progress(request: Request, deck_id: int, db: sqlite3.Connection =
             "request": request,
             "deck": deck,
             "all_cards": all_cards_sorted
+        }
+    )
+
+@app.get("/settings/{deck_id}", response_class=HTMLResponse)
+async def deck_settings_page(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
+    deck = crud.get_deck(db, deck_id)
+    if not deck:
+        return RedirectResponse(url="/decks")
+
+    # Get global settings to show as placeholders/defaults
+    global_new = crud.get_setting(db, "new_cards_per_day") or "5"
+    global_max = crud.get_setting(db, "max_reviews_per_day") or "20"
+
+    return templates.TemplateResponse(
+        "settings_deck.html",
+        {
+            "request": request,
+            "deck": deck,
+            "global_new_cards_per_day": global_new,
+            "global_max_reviews_per_day": global_max,
+            "message": None
+        }
+    )
+
+@app.post("/settings/{deck_id}", response_class=HTMLResponse)
+async def update_deck_settings(
+    request: Request,
+    deck_id: int,
+    new_cards_per_day: Optional[str] = Form(None),
+    max_reviews_per_day: Optional[str] = Form(None),
+    db: sqlite3.Connection = Depends(get_database)
+):
+    # Convert empty strings from form to None, otherwise convert to int
+    new_cards_val = int(new_cards_per_day) if new_cards_per_day else None
+    max_reviews_val = int(max_reviews_per_day) if max_reviews_per_day else None
+
+    crud.update_deck_settings(db, deck_id, new_cards_val, max_reviews_val)
+    
+    deck = crud.get_deck(db, deck_id) # Re-fetch deck to show updated values
+    global_new = crud.get_setting(db, "new_cards_per_day") or "5"
+    global_max = crud.get_setting(db, "max_reviews_per_day") or "20"
+
+    return templates.TemplateResponse(
+        "settings_deck.html",
+        {
+            "request": request,
+            "deck": deck,
+            "global_new_cards_per_day": global_new,
+            "global_max_reviews_per_day": global_max,
+            "message": "Deck settings updated successfully!"
         }
     )
 

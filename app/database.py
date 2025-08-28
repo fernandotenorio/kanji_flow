@@ -23,7 +23,9 @@ def create_tables():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
             card_template TEXT NOT NULL,
-            card_css TEXT NOT NULL
+            card_css TEXT NOT NULL,
+            new_cards_per_day INTEGER,
+            max_reviews_per_day INTEGER
         );
     """)
 

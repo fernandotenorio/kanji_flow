@@ -36,6 +36,18 @@ def get_all_decks(db: sqlite3.Connection) -> List[Deck]:
     cursor.execute("SELECT * FROM decks")
     return [Deck.model_validate(dict(row)) for row in cursor.fetchall()]
 
+def update_deck_settings(db: sqlite3.Connection, deck_id: int, new_cards: Optional[int], max_reviews: Optional[int]) -> Optional[Deck]:
+    cursor = db.cursor()
+    cursor.execute(
+        """UPDATE decks SET
+            new_cards_per_day = ?,
+            max_reviews_per_day = ?
+           WHERE id = ?""",
+        (new_cards, max_reviews, deck_id)
+    )
+    db.commit()
+    return get_deck(db, deck_id)
+
 # --- Card CRUD ---
 def get_card(db: sqlite3.Connection, card_id: int) -> Optional[Card]:
     cursor = db.cursor()
@@ -48,12 +60,17 @@ def get_all_cards_in_deck(db: sqlite3.Connection, deck_id: int) -> List[Card]:
     cursor.execute("SELECT * FROM cards WHERE deck_id = ?", (deck_id,))
     return [_row_to_card(row) for row in cursor.fetchall()]
 
-def get_cards_for_review(db: sqlite3.Connection, deck_id: int, current_date: date) -> List[Card]:
+def get_cards_for_review(db: sqlite3.Connection, deck_id: int, current_date: date, limit: Optional[int] = None) -> List[Card]:
     cursor = db.cursor()
-    cursor.execute(
-        "SELECT * FROM cards WHERE deck_id = ? AND next_review_date <= ?",
-        (deck_id, current_date.isoformat())
-    )
+    
+    query = "SELECT * FROM cards WHERE deck_id = ? AND next_review_date <= ? ORDER BY next_review_date"
+    params = [deck_id, current_date.isoformat()]
+
+    if limit is not None and limit > 0:
+        query += " LIMIT ?"
+        params.append(limit)
+
+    cursor.execute(query, params)
     return [_row_to_card(row) for row in cursor.fetchall()]
 
 def create_card(db: sqlite3.Connection, card: CardCreate) -> Card:

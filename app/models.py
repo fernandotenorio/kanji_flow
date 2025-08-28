@@ -10,6 +10,8 @@ class DeckBase(BaseModel):
     name: str
     card_template: str  # To store the Jinja2 template for rendering cards
     card_css: str
+    new_cards_per_day: Optional[int] = None
+    max_reviews_per_day: Optional[int] = None
 
 class DeckCreate(DeckBase):
     pass

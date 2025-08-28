@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
-{% block page_title %}Settings{% endblock %}
+{% block page_title %}Global Default Settings{% endblock %}
 
 {% block content %}
     <div class="card form-card">
-        <h3>Algorithm Settings</h3>
+        <h3>Global Algorithm Settings</h3>
+        <p>These are the default settings for all decks. You can override them in each deck's specific settings page.</p>
         {% if message %}
             <p class="message">{{ message }}</p>
         {% endif %}

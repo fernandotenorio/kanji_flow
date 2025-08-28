@@ -1,16 +1,17 @@
+<!-- templates/decks.html -->
 {% extends "base.html" %}
-
 {% block page_title %}Your Decks{% endblock %}
-
 {% block content %}
     <div class="dashboard-grid">
         {% if decks %}
             {% for deck in decks %}
-                <div class="card stat-card">
+                <div class="card stat-card" style="padding-bottom: 50px; position: relative;">
                     <h3>{{ deck.name }}</h3>
-                    <!-- These links don't work yet, but we will implement them in the next step -->
-                    <a href="/study/{{ deck.id }}" class="btn btn-primary" style="margin-top: 15px;">Study</a>
-                    <a href="/progress/{{ deck.id }}" class="btn btn-secondary" style="margin-top: 15px;">View Progress</a>
+                    <div style="">
+                        <a href="/study/{{ deck.id }}" class="btn btn-primary">Study</a>
+                        <a href="/progress/{{ deck.id }}" class="btn btn-secondary">Progress</a>
+                        <a href="/settings/{{ deck.id }}" class="btn btn-secondary" style="background-color: #7f8c8d;">Settings</a>
+                    </div>
                 </div>
             {% endfor %}
         {% else %}
