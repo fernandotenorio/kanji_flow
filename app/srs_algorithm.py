@@ -1,43 +1,57 @@
 # app/srs_algorithm.py
+from datetime import datetime, timedelta
+from typing import List
+from app.models import Card
 
-from datetime import date, timedelta
-from app.models import Card # Change this from Kanji
-
-def sm2_algorithm(card: Card, quality: int) -> Card: # Change the type hint here
+def sm2_algorithm(
+    card: Card,
+    quality: int,
+    learning_steps_minutes: List[int],
+    graduating_interval_days: int
+) -> Card:
     """
-    Implements the SuperMemo 2 (SM-2) algorithm.
-    quality: 0-2 (Hard), 3 (Good), 4-5 (Easy) mapping for button clicks.
+    Implements a modified SM-2 algorithm with configurable learning steps.
+    quality: 0-2 (Hard/Incorrect), 3 (Good), 4-5 (Easy)
     """
-    # ... the rest of the function remains the same
     ease_factor = card.ease_factor
     interval_days = card.interval_days
     reviews = card.reviews
 
-    if quality >= 3: # Correct answer (Good or Easy)
-        if reviews == 0:
-            interval_days = 1
-        elif reviews == 1:
-            interval_days = 6
-        else:
-            interval_days = round(interval_days * ease_factor)
+    if quality >= 3:  # Correct answer
+        # Check if the card is still in the learning phase
+        if reviews < len(learning_steps_minutes):
+            interval_minutes = learning_steps_minutes[reviews]
+            card.next_review_date = datetime.now() + timedelta(minutes=interval_minutes)
+            card.interval_days = 0  # Keep interval at 0 until graduation
+        else:  # Card is graduating or is already graduated
+            # If this is the first review after learning steps, use the graduating interval
+            if interval_days == 0:
+                interval_days = graduating_interval_days
+            else: # Standard SM-2 for already graduated cards
+                interval_days = round(interval_days * ease_factor)
 
+            # Ease factor adjustment only happens on graduated cards
+            ease_factor += (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
+            if ease_factor < 1.3:
+                ease_factor = 1.3
+            
+            card.next_review_date = datetime.now() + timedelta(days=interval_days)
+        
         reviews += 1
-        ease_factor += (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02))
-        if ease_factor < 1.3:
-            ease_factor = 1.3
-    else: # Incorrect answer (Hard, or forgotten)
-        reviews = 0 # Reset reviews for this card
-        interval_days = 1 # Review tomorrow
-        # No change to ease_factor if quality is 0, 1, 2. If it was 0, ease_factor could decrease.
-        # For simplicity, let's just use 0-2 as "Hard" and reset interval.
-        # A more faithful implementation might slightly decrease ease_factor for quality 0-2.
-
-    next_review_date = date.today() + timedelta(days=interval_days)
-
-    card.next_review_date = next_review_date
-    card.interval_days = interval_days
+    else:  # Incorrect answer
+        # Reset the card to the beginning of the learning phase
+        reviews = 0
+        interval_days = 0 # Reset interval
+        # Use the first learning step
+        interval_minutes = learning_steps_minutes[0] if learning_steps_minutes else 10
+        card.next_review_date = datetime.now() + timedelta(minutes=interval_minutes)
+        # Optional: Penalize ease factor on lapses for graduated cards
+        if card.interval_days > 0 and ease_factor > 1.3:
+             ease_factor -= 0.2
+    
     card.ease_factor = ease_factor
+    card.interval_days = interval_days
     card.reviews = reviews
-    card.last_reviewed_date = date.today()
+    card.last_reviewed_date = datetime.now()
 
     return card

@@ -3,7 +3,7 @@
 import sqlite3
 import json
 from typing import List, Optional
-from datetime import date
+from datetime import datetime
 from app.models import DeckCreate, Deck, CardCreate, Card, Settings
 
 # --- Helper function to parse a row into a Card model ---
@@ -36,14 +36,14 @@ def get_all_decks(db: sqlite3.Connection) -> List[Deck]:
     cursor.execute("SELECT * FROM decks")
     return [Deck.model_validate(dict(row)) for row in cursor.fetchall()]
 
-def update_deck_settings(db: sqlite3.Connection, deck_id: int, new_cards: Optional[int], max_reviews: Optional[int]) -> Optional[Deck]:
+def update_deck_settings(db: sqlite3.Connection, deck_id: int, new_cards: Optional[int], max_reviews: Optional[int], learning_steps: Optional[str], graduating_interval: Optional[int]) -> Optional[Deck]:
     cursor = db.cursor()
     cursor.execute(
         """UPDATE decks SET
-            new_cards_per_day = ?,
-            max_reviews_per_day = ?
+            new_cards_per_day = ?, max_reviews_per_day = ?,
+            learning_steps = ?, graduating_interval = ?
            WHERE id = ?""",
-        (new_cards, max_reviews, deck_id)
+        (new_cards, max_reviews, learning_steps, graduating_interval, deck_id)
     )
     db.commit()
     return get_deck(db, deck_id)
@@ -63,7 +63,7 @@ def get_all_cards_in_deck(db: sqlite3.Connection, deck_id: int) -> List[Card]:
 def get_cards_for_review(
     db: sqlite3.Connection,
     deck_id: int,
-    current_date: date,
+    current_date: datetime,
     new_card_limit: int,
     total_limit: int
 ) -> List[Card]:
@@ -105,17 +105,16 @@ def get_cards_for_review(
 
 def create_card(db: sqlite3.Connection, card: CardCreate) -> Card:
     cursor = db.cursor()
-    # Serialize the data dictionary into a JSON string for storage
     data_json = json.dumps(card.data)
     cursor.execute(
         "INSERT INTO cards (deck_id, data, next_review_date, last_reviewed_date) VALUES (?, ?, ?, ?)",
-        (card.deck_id, data_json, date.today().isoformat(), None)
+        (card.deck_id, data_json, datetime.now().isoformat(), None) # Use datetime
     )
     db.commit()
     card_id = cursor.lastrowid
     return get_card(db, card_id)
 
-def update_card_review_data(db: sqlite3.Connection, card_id: int, next_review_date: date, interval_days: float, ease_factor: float, reviews: int, last_reviewed_date: date) -> Optional[Card]:
+def update_card_review_data(db: sqlite3.Connection, card_id: int, next_review_date: datetime, interval_days: float, ease_factor: float, reviews: int, last_reviewed_date: datetime) -> Optional[Card]:
     cursor = db.cursor()
     cursor.execute(
         """UPDATE cards SET

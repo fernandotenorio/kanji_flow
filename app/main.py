@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 import sqlite3
 import json
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, Dict, Any
 
 from app import crud, models
@@ -172,7 +172,7 @@ async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = De
         effective_max_reviews = deck.max_reviews_per_day or global_max_reviews
 
         cards_for_session = crud.get_cards_for_review(
-            db, deck_id, date.today(),
+            db, deck_id, datetime.now(),
             new_card_limit=effective_new_cards,
             total_limit=effective_max_reviews
         )
@@ -215,8 +215,19 @@ async def submit_review(
 ):
     from app.srs_algorithm import sm2_algorithm
     card = crud.get_card(db, card_id)
+
     if card:
-        updated_card = sm2_algorithm(card, quality)
+        deck = crud.get_deck(db, deck_id)
+        global_steps_str = crud.get_setting(db, "learning_steps") or "10 1440"
+        global_grad_interval = int(crud.get_setting(db, "graduating_interval") or "4")
+
+        effective_steps_str = deck.learning_steps or global_steps_str
+        effective_grad_interval = deck.graduating_interval or global_grad_interval
+
+        # Parse the learning steps string into a list of integers
+        learning_steps = [int(step) for step in effective_steps_str.split()]
+
+        updated_card = sm2_algorithm(card, quality, learning_steps, effective_grad_interval)
         crud.update_card_review_data(
             db, updated_card.id, updated_card.next_review_date,
             updated_card.interval_days, updated_card.ease_factor,
@@ -289,13 +300,16 @@ async def update_deck_settings(
     deck_id: int,
     new_cards_per_day: Optional[str] = Form(None),
     max_reviews_per_day: Optional[str] = Form(None),
+    learning_steps: Optional[str] = Form(None),
+    graduating_interval: Optional[str] = Form(None),
     db: sqlite3.Connection = Depends(get_database)
 ):
     # Convert empty strings from form to None, otherwise convert to int
     new_cards_val = int(new_cards_per_day) if new_cards_per_day else None
     max_reviews_val = int(max_reviews_per_day) if max_reviews_per_day else None
 
-    crud.update_deck_settings(db, deck_id, new_cards_val, max_reviews_val)
+    graduating_interval_val = int(graduating_interval) if graduating_interval else None
+    crud.update_deck_settings(db, deck_id, new_cards_val, max_reviews_val, learning_steps, graduating_interval_val)
     
     deck = crud.get_deck(db, deck_id) # Re-fetch deck to show updated values
     global_new = crud.get_setting(db, "new_cards_per_day") or "5"

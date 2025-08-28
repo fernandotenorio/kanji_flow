@@ -25,7 +25,9 @@ def create_tables():
             card_template TEXT NOT NULL,
             card_css TEXT NOT NULL,
             new_cards_per_day INTEGER,
-            max_reviews_per_day INTEGER
+            max_reviews_per_day INTEGER,
+            learning_steps TEXT,
+            graduating_interval INTEGER
         );
     """)
 
