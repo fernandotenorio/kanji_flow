@@ -39,8 +39,11 @@
             </div>
         </div>
         <p class="reviews-left" style="text-align: center; margin-top: 20px; color: #7f8c8d;">
-            Reviews left in this session: {{ total_reviews_today }}
+            {{ reviews_left }} / {{ total_reviews_today }} cards left in this session.
         </p>
+        <div style="text-align: center; margin-top: 10px;">
+            <a href="/end_session/{{ deck.id }}">End Session & Go to Decks</a>
+        </div>
     {% else %}
         <div class="empty-state">
             <p>{{ message or "No cards to review today!" }}</p>

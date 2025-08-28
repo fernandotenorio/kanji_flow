@@ -60,18 +60,48 @@ def get_all_cards_in_deck(db: sqlite3.Connection, deck_id: int) -> List[Card]:
     cursor.execute("SELECT * FROM cards WHERE deck_id = ?", (deck_id,))
     return [_row_to_card(row) for row in cursor.fetchall()]
 
-def get_cards_for_review(db: sqlite3.Connection, deck_id: int, current_date: date, limit: Optional[int] = None) -> List[Card]:
+def get_cards_for_review(
+    db: sqlite3.Connection,
+    deck_id: int,
+    current_date: date,
+    new_card_limit: int,
+    total_limit: int
+) -> List[Card]:
+    """
+    Fetches cards for a review session, prioritizing due cards, then adding new cards.
+    The total number of cards is capped by total_limit.
+    """
     cursor = db.cursor()
+
+    # 1. Get all cards that are due for review (have been seen before)
+    # These are the highest priority. We order by date to show the most "overdue" first.
+    cursor.execute(
+        """SELECT * FROM cards 
+           WHERE deck_id = ? AND reviews > 0 AND next_review_date <= ?
+           ORDER BY next_review_date ASC""",
+        (deck_id, current_date.isoformat())
+    )
+    due_review_cards = [_row_to_card(row) for row in cursor.fetchall()]
+
+    # 2. Get a limited number of new cards (have never been seen)
+    new_cards_to_add = []
+    if new_card_limit > 0:
+        cursor.execute(
+            """SELECT * FROM cards 
+               WHERE deck_id = ? AND reviews = 0
+               ORDER BY id ASC 
+               LIMIT ?""",
+            (deck_id, new_card_limit)
+        )
+        new_cards_to_add = [_row_to_card(row) for row in cursor.fetchall()]
+
+    # 3. Combine the lists: due reviews first, then new cards
+    combined_session = due_review_cards + new_cards_to_add
     
-    query = "SELECT * FROM cards WHERE deck_id = ? AND next_review_date <= ? ORDER BY next_review_date"
-    params = [deck_id, current_date.isoformat()]
-
-    if limit is not None and limit > 0:
-        query += " LIMIT ?"
-        params.append(limit)
-
-    cursor.execute(query, params)
-    return [_row_to_card(row) for row in cursor.fetchall()]
+    # 4. Enforce the total session limit (max_reviews_per_day)
+    if total_limit > 0:
+        return combined_session[:total_limit]
+    return combined_session
 
 def create_card(db: sqlite3.Connection, card: CardCreate) -> Card:
     cursor = db.cursor()

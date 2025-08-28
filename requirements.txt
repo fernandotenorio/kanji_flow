@@ -3,3 +3,4 @@ sqlalchemy
 jinja2
 python-multipart
 uvicorn
+itsdangerous

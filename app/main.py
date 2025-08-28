@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Depends, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 import sqlite3
 import json
 from datetime import date
@@ -15,6 +16,13 @@ from app.database import get_db, create_tables
 create_tables()
 
 app = FastAPI()
+
+# --- SECRET KEY AND SESSION MIDDLEWARE ---
+# IMPORTANT: In a real production app, this key should be a long, random
+# string and loaded from an environment variable, not hardcoded.
+SECRET_KEY = "a_very_secret_key_for_development"
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+# ----------------------------------------
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -104,22 +112,29 @@ async def add_deck_submit(
 
 
 # Study session
-@app.get("/study/{deck_id}", response_class=HTMLResponse)
-async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
     deck = crud.get_deck(db, deck_id)
     if not deck:
         return RedirectResponse(url="/decks")
 
-    # --- SETTINGS LOGIC ---
+    # --- COMPLETE SETTINGS LOGIC ---
     # Get global settings as fallbacks
+    global_new_cards = int(crud.get_setting(db, "new_cards_per_day") or "5")
     global_max_reviews = int(crud.get_setting(db, "max_reviews_per_day") or "20")
-    # Determine the effective setting: deck-specific, or global if not set
+    
+    # Determine the effective settings: deck-specific, or global if not set
+    effective_new_cards = deck.new_cards_per_day or global_new_cards
     effective_max_reviews = deck.max_reviews_per_day or global_max_reviews
     
-    # Use the effective setting in the CRUD call
-    cards_to_review = crud.get_cards_for_review(db, deck_id, date.today(), limit=effective_max_reviews)
+    # Use the effective settings in the powerful new CRUD call
+    cards_to_review = crud.get_cards_for_review(
+        db,
+        deck_id,
+        date.today(),
+        new_card_limit=effective_new_cards,
+        total_limit=effective_max_reviews
+    )
     
-    # (The rest of the function is the same...)
+    # (The rest of the function remains the same as before)
     if not cards_to_review:
         return templates.TemplateResponse(
             "study.html",
@@ -140,33 +155,91 @@ async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = De
             "total_reviews_today": len(cards_to_review)
         }
     )
+@app.get("/study/{deck_id}", response_class=HTMLResponse)
+async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
+    deck = crud.get_deck(db, deck_id)
+    if not deck:
+        return RedirectResponse(url="/decks")
+
+    session = request.session
+    session_key = f"study_session_deck_{deck_id}"
+
+    # If there's no list of card IDs in the session, start a new session
+    if session_key not in session:
+        global_new_cards = int(crud.get_setting(db, "new_cards_per_day") or "5")
+        global_max_reviews = int(crud.get_setting(db, "max_reviews_per_day") or "20")
+        effective_new_cards = deck.new_cards_per_day or global_new_cards
+        effective_max_reviews = deck.max_reviews_per_day or global_max_reviews
+
+        cards_for_session = crud.get_cards_for_review(
+            db, deck_id, date.today(),
+            new_card_limit=effective_new_cards,
+            total_limit=effective_max_reviews
+        )
+        # Store only the IDs in the session
+        session[session_key] = [card.id for card in cards_for_session]
+        session[f"{session_key}_total"] = len(cards_for_session) # Store original total for display
+
+    card_ids_in_session = session[session_key]
+    total_cards_in_session = session.get(f"{session_key}_total", 0)
+
+    # If the list of IDs is empty, the session is over
+    if not card_ids_in_session:
+        # Clear session keys to allow a new session to start next time
+        session.pop(session_key, None)
+        session.pop(f"{session_key}_total", None)
+        return templates.TemplateResponse(
+            "study.html", {
+                "request": request, "deck": deck, "current_card": None,
+                "message": "Session complete. Well done!"
+            })
+
+    # Get the next card to study from the list
+    next_card_id = card_ids_in_session[0]
+    current_card = crud.get_card(db, next_card_id)
+
+    return templates.TemplateResponse(
+        "study.html", {
+            "request": request, "deck": deck, "current_card": current_card,
+            "reviews_left": len(card_ids_in_session),
+            "total_reviews_today": total_cards_in_session
+        })
 
 @app.post("/submit_review/{deck_id}", response_class=RedirectResponse)
 async def submit_review(
+    request: Request, # Add request to access the session
     deck_id: int,
     card_id: int = Form(...),
     quality: int = Form(...),
     db: sqlite3.Connection = Depends(get_database)
 ):
     from app.srs_algorithm import sm2_algorithm
-
     card = crud.get_card(db, card_id)
-    if not card:
-        return RedirectResponse(url=f"/study/{deck_id}", status_code=303)
+    if card:
+        updated_card = sm2_algorithm(card, quality)
+        crud.update_card_review_data(
+            db, updated_card.id, updated_card.next_review_date,
+            updated_card.interval_days, updated_card.ease_factor,
+            updated_card.reviews, updated_card.last_reviewed_date
+        )
 
-    # Use the existing SRS algorithm
-    updated_card = sm2_algorithm(card, quality)
-    
-    # Persist the changes to the database
-    crud.update_card_review_data(
-        db, updated_card.id, updated_card.next_review_date,
-        updated_card.interval_days, updated_card.ease_factor,
-        updated_card.reviews, updated_card.last_reviewed_date
-    )
+    # --- SESSION UPDATE LOGIC ---
+    session_key = f"study_session_deck_{deck_id}"
+    if session_key in request.session:
+        card_ids = request.session[session_key]
+        # Remove the card we just reviewed from the front of the list
+        if card_ids and card_ids[0] == card_id:
+            request.session[session_key] = card_ids[1:]
 
-    # Redirect back to the study page for the same deck to get the next card
-    return RedirectResponse(url=f"/study/{deck_id}", status_code=303)
+    return RedirectResponse(url=f"/study/{deck_id}", status_code=303)        
 
+@app.get("/end_session/{deck_id}", response_class=RedirectResponse)
+async def end_session(request: Request, deck_id: int):
+    session_key = f"study_session_deck_{deck_id}"
+    if session_key in request.session:
+        request.session.pop(session_key, None)
+        request.session.pop(f"{session_key}_total", None)
+    return RedirectResponse(url="/decks")
 
 @app.get("/progress/{deck_id}", response_class=HTMLResponse)
 async def deck_progress(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
