@@ -1,15 +1,17 @@
-# This would typically be in app/srs_algorithm.py or integrated into the review logic
-from datetime import date, timedelta
-from app.models import Kanji
+# app/srs_algorithm.py
 
-def sm2_algorithm(kanji: Kanji, quality: int) -> Kanji:
+from datetime import date, timedelta
+from app.models import Card # Change this from Kanji
+
+def sm2_algorithm(card: Card, quality: int) -> Card: # Change the type hint here
     """
     Implements the SuperMemo 2 (SM-2) algorithm.
     quality: 0-2 (Hard), 3 (Good), 4-5 (Easy) mapping for button clicks.
     """
-    ease_factor = kanji.ease_factor
-    interval_days = kanji.interval_days
-    reviews = kanji.reviews
+    # ... the rest of the function remains the same
+    ease_factor = card.ease_factor
+    interval_days = card.interval_days
+    reviews = card.reviews
 
     if quality >= 3: # Correct answer (Good or Easy)
         if reviews == 0:
@@ -32,10 +34,10 @@ def sm2_algorithm(kanji: Kanji, quality: int) -> Kanji:
 
     next_review_date = date.today() + timedelta(days=interval_days)
 
-    kanji.next_review_date = next_review_date
-    kanji.interval_days = interval_days
-    kanji.ease_factor = ease_factor
-    kanji.reviews = reviews
-    kanji.last_reviewed_date = date.today()
+    card.next_review_date = next_review_date
+    card.interval_days = interval_days
+    card.ease_factor = ease_factor
+    card.reviews = reviews
+    card.last_reviewed_date = date.today()
 
-    return kanji
+    return card

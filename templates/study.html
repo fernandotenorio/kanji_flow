@@ -1,49 +1,50 @@
 {% extends "base.html" %}
 
-{% block page_title %}Study Session{% endblock %}
+{% block page_title %}Study: {{ deck.name }}{% endblock %}
+
+{# This block correctly places the styles in the head tag #}
+{% block extra_css %}
+    <style>
+        {{ deck.card_css | safe }}
+    </style>
+{% endblock %}
 
 {% block content %}
-    {% if current_kanji %}
+    {% if current_card %}
         <div class="kanji-card-container">
-            <div class="kanji-card" id="kanjiCard">
-                <div class="kanji-character">{{ current_kanji.character }}</div>
-                
-                <!-- This is the content that will be toggled -->
-                <div class="kanji-meaning" id="kanjiMeaning" style="display: none;">
-                    <p><strong>Meaning:</strong> {{ current_kanji.meaning }}</p>
-                    {% if current_kanji.onyomi %}<p><strong>Onyomi:</strong> {{ current_kanji.onyomi }}</p>{% endif %}
-                    {% if current_kanji.kunyomi %}<p><strong>Kunyomi:</strong> {{ current_kanji.kunyomi }}</p>{% endif %}
-                    {% if current_kanji.grade %}<p><strong>Grade:</strong> {{ current_kanji.grade }}</p>{% endif %}
-                </div>
 
-                <!--
-                  FIXES:
-                  1. Removed onclick="toggleMeaning()"
-                  2. Added id="toggleMeaningBtn"
-                -->
-                <button id="toggleMeaningBtn" class="btn btn-show-hide">Show Meaning</button>
-            </div>
-            <div class="review-buttons">
-                <form action="/submit_review" method="post" style="display: inline;">
-                    <input type="hidden" name="kanji_id" value="{{ current_kanji.id }}">
+            {#
+              This is the corrected rendering logic.
+              We call our new global function 'render_template_string'.
+              - The first argument is the template string from the deck.
+              - We then explicitly pass the 'current_card' variable into the sub-template,
+                naming it 'card' for the user's convenience.
+              - The result is HTML, so we use the '| safe' filter.
+            #}
+            {{ render_template_string(deck.card_template, card=current_card) | safe }}
+
+            <div class="review-buttons" style="margin-top: 20px;">
+                <form action="/submit_review/{{ deck.id }}" method="post" style="display: inline;">
+                    <input type="hidden" name="card_id" value="{{ current_card.id }}">
                     <button type="submit" name="quality" value="1" class="btn btn-danger">Hard</button>
                 </form>
-                <form action="/submit_review" method="post" style="display: inline;">
-                    <input type="hidden" name="kanji_id" value="{{ current_kanji.id }}">
+                <form action="/submit_review/{{ deck.id }}" method="post" style="display: inline;">
+                    <input type="hidden" name="card_id" value="{{ current_card.id }}">
                     <button type="submit" name="quality" value="3" class="btn btn-warning">Good</button>
                 </form>
-                <form action="/submit_review" method="post" style="display: inline;">
-                    <input type="hidden" name="kanji_id" value="{{ current_kanji.id }}">
+                <form action="/submit_review/{{ deck.id }}" method="post" style="display: inline;">
+                    <input type="hidden" name="card_id" value="{{ current_card.id }}">
                     <button type="submit" name="quality" value="5" class="btn btn-success">Easy</button>
                 </form>
             </div>
         </div>
-        <p class="reviews-left">Reviews left today: {{ total_reviews_today }}</p>
+        <p class="reviews-left" style="text-align: center; margin-top: 20px; color: #7f8c8d;">
+            Reviews left in this session: {{ total_reviews_today }}
+        </p>
     {% else %}
         <div class="empty-state">
-            <p>{{ message or "No kanji to review today!" }}</p>
-            <a href="/add_kanji" class="btn btn-primary">Add New Kanji</a>
-            <a href="/dashboard" class="btn btn-secondary">Go to Dashboard</a>
+            <p>{{ message or "No cards to review today!" }}</p>
+            <a href="/decks" class="btn btn-secondary">Back to Decks</a>
         </div>
     {% endif %}
 {% endblock %}

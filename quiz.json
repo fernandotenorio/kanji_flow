@@ -1,0 +1,32 @@
+[
+    {
+        "question": "What is the largest planet in our solar system?",
+        "options": [
+            "Earth",
+            "Mars",
+            "Jupiter",
+            "Saturn"
+        ],
+        "answer": "Jupiter"
+    },
+    {
+        "question": "What is the chemical symbol for gold?",
+        "options": [
+            "Au",
+            "Ag",
+            "Go",
+            "Gd"
+        ],
+        "answer": "Au"
+    },
+    {
+        "question": "Who wrote 'Hamlet'?",
+        "options": [
+            "Charles Dickens",
+            "William Shakespeare",
+            "Leo Tolstoy",
+            "Mark Twain"
+        ],
+        "answer": "William Shakespeare"
+    }
+]

@@ -1,23 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-    // --- Logic for the Study Page ---
-    const toggleButton = document.getElementById('toggleMeaningBtn');
-    const meaningDiv = document.getElementById('kanjiMeaning');
+    // --- Logic for the Study Page Card Toggle ---
+    // This is now generic to work with any card template that uses these IDs.
+    const toggleButton = document.getElementById('toggleBtn');
+    const backContent = document.getElementById('cardBack');
 
-    // Only add the event listener if the button actually exists on the current page.
-    if (toggleButton && meaningDiv) {
+    if (toggleButton && backContent) {
         toggleButton.addEventListener('click', function() {
-            // Check the current display style
-            const isHidden = meaningDiv.style.display === 'none' || meaningDiv.style.display === '';
+            const isHidden = backContent.style.display === 'none' || backContent.style.display === '';
 
             if (isHidden) {
-                // If it's hidden, show it and change button text
-                meaningDiv.style.display = 'block';
-                toggleButton.textContent = 'Hide Meaning';
+                backContent.style.display = 'block';
+                toggleButton.textContent = 'Hide Answer';
             } else {
-                // If it's visible, hide it and change button text
-                meaningDiv.style.display = 'none';
-                toggleButton.textContent = 'Show Meaning';
+                backContent.style.display = 'none';
+                toggleButton.textContent = 'Show Answer';
             }
         });
     }
@@ -28,9 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const navLinks = document.querySelectorAll('.sidebar nav ul li a');
 
     navLinks.forEach(link => {
-        if (link.getAttribute('href') === currentLocation) {
+        // Use startsWith to highlight parent sections like '/decks' when on '/add_deck'
+        const linkPath = link.getAttribute('href');
+        if (currentLocation === linkPath) {
             link.classList.add('active');
         }
     });
-
 });

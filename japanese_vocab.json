@@ -1,0 +1,22 @@
+[
+    {
+        "vocab": "猫",
+        "reading": "ねこ",
+        "meaning": "Cat"
+    },
+    {
+        "vocab": "犬",
+        "reading": "いぬ",
+        "meaning": "Dog"
+    },
+    {
+        "vocab": "学校",
+        "reading": "がっこう",
+        "meaning": "School"
+    },
+    {
+        "vocab": "食べる",
+        "reading": "たべる",
+        "meaning": "To eat"
+    }
+]

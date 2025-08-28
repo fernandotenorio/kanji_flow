@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block page_title %}Progress: {{ deck.name }}{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h3>Card Mastery Overview</h3>
+        <p>Here is a list of all the cards in this deck and their current status.</p>
+        
+        {% if all_cards %}
+            <table class="progress-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Card Data</th>
+                        <th>Reviews</th>
+                        <th>Next Review</th>
+                        <th>Interval (Days)</th>
+                        <th>Ease Factor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for card in all_cards %}
+                        <tr>
+                            {# Display the raw card data dictionary as a string #}
+                            <td><pre style="white-space: pre-wrap; word-break: break-all; margin: 0; font-family: monospace;">{{ card.data }}</pre></td>
+                            <td>{{ card.reviews }}</td>
+                            <td>{{ card.next_review_date.strftime('%Y-%m-%d') if card.next_review_date else 'N/A' }}</td>
+                            <td>{{ card.interval_days|round(1) }}</td>
+                            <td>{{ card.ease_factor|round(2) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>This deck doesn't have any cards yet.</p>
+        {% endif %}
+        <a href="/decks" class="btn btn-secondary" style="margin-top: 20px;">Back to Decks</a>
+    </div>
+{% endblock %}

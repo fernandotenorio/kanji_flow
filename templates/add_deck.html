@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block page_title %}Add New Deck{% endblock %}
+
+{% block content %}
+<div class="card form-card">
+    <h3>Create a New Deck</h3>
+    {% if message %}
+        <p class="message" style="background-color: #dff0d8; color: #3c763d;">{{ message }}</p>
+    {% endif %}
+    {% if error %}
+        <p class="message" style="background-color: #f2dede; color: #a94442;">{{ error }}</p>
+    {% endif %}
+
+    <form action="/add_deck" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="name">Deck Name:</label>
+            <input type="text" id="name" name="name" value="{{ name or '' }}" autocomplete="off" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="card_template">Card Template (Jinja2 HTML):</label>
+            <textarea id="card_template" name="card_template" rows="10" style="width: 100%; font-family: monospace; padding: 5px;" required>
+{%- if card_template -%}
+{{- card_template -}}
+{%- else -%}
+{%- raw -%}
+<div class="kanji-card" id="kanjiCard">
+    <div class="kanji-character">{{ card.data.front }}</div>
+    
+    <div class="kanji-meaning" id="cardBack" style="display: none;">
+        <p><strong>Answer:</strong> {{ card.data.back }}</p>
+    </div>
+
+    <button type="button" id="toggleBtn" class="btn btn-show-hide">Show Answer</button>
+</div>
+{%- endraw -%}
+{%- endif -%}
+</textarea>
+            <small>Use `{% raw %}{{ card.data.your_json_key }}{% endraw %}` to access card data.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="card_css">Card CSS:</label>
+            <textarea id="card_css" name="card_css" rows="10" style="width: 100%; font-family: monospace; padding: 5px;" required>
+{%- if card_css -%}
+{{- card_css -}}
+{%- else -%}
+.kanji-card-container { text-align: center; }
+.kanji-card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: inline-block; min-width: 300px; }
+.kanji-character { font-size: 80px; margin-bottom: 20px; }
+.kanji-meaning { margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; }
+.btn-show-hide { background-color: #95a5a6; color: white; }
+{%- endif -%}
+</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="deck_file">Deck Data (JSON file):</label>
+            <input type="file" id="deck_file" name="deck_file" accept=".json" required>
+            <small>The file must be a JSON array of objects, e.g., `[{"front": "Q1", "back": "A1"}, ...]`</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Deck</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block page_title %}Your Decks{% endblock %}
+
+{% block content %}
+    <div class="dashboard-grid">
+        {% if decks %}
+            {% for deck in decks %}
+                <div class="card stat-card">
+                    <h3>{{ deck.name }}</h3>
+                    <!-- These links don't work yet, but we will implement them in the next step -->
+                    <a href="/study/{{ deck.id }}" class="btn btn-primary" style="margin-top: 15px;">Study</a>
+                    <a href="/progress/{{ deck.id }}" class="btn btn-secondary" style="margin-top: 15px;">View Progress</a>
+                </div>
+            {% endfor %}
+        {% else %}
+             <div class="card full-width-card">
+                <h3>No decks found!</h3>
+                <p>You haven't created any study decks yet. Get started by adding a new one.</p>
+                <a href="/add_deck" class="btn btn-primary" style="margin-top: 15px;">Add Your First Deck</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

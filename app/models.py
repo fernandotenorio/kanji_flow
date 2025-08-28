@@ -1,19 +1,35 @@
+# app/models.py
+
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import date
 
-class KanjiBase(BaseModel):
-    character: str
-    meaning: str
-    onyomi: Optional[str] = None
-    kunyomi: Optional[str] = None
-    grade: Optional[int] = None
-    stroke_count: Optional[int] = None
+# --- Deck Models ---
 
-class KanjiCreate(KanjiBase):
+class DeckBase(BaseModel):
+    name: str
+    card_template: str  # To store the Jinja2 template for rendering cards
+    card_css: str
+
+class DeckCreate(DeckBase):
     pass
 
-class Kanji(KanjiBase):
+class Deck(DeckBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+# --- Card Models ---
+
+class CardBase(BaseModel):
+    # This dictionary will hold the card's content, e.g., {"front": "...", "back": "..."}
+    data: Dict[str, Any]
+
+class CardCreate(CardBase):
+    deck_id: int
+
+class Card(CardCreate):
     id: int
     next_review_date: date = date.today()
     interval_days: float = 0.0
@@ -22,9 +38,9 @@ class Kanji(KanjiBase):
     last_reviewed_date: Optional[date] = None
 
     class Config:
-        # This is the line to change
-        from_attributes = True # Changed from orm_mode = True
+        from_attributes = True
 
+# --- Settings Model (Unchanged) ---
 class Settings(BaseModel):
     setting_name: str
     setting_value: str

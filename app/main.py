@@ -1,15 +1,14 @@
-from fastapi import FastAPI, Request, Depends, Form
+from fastapi import FastAPI, Request, Depends, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from typing import Optional
-from sqlalchemy.orm import Session # We'll use this for type hinting, even with SQLite
 import sqlite3
-from datetime import date, timedelta
+import json
+from datetime import date
 
 from app import crud, models
 from app.database import get_db, create_tables
-from app.srs_algorithm import sm2_algorithm # Assuming you put SM-2 here
+
 
 # Call create_tables once at startup
 create_tables()
@@ -19,113 +18,176 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# Dependency to get database connection
+# --- THIS IS THE NEW CODE BLOCK TO ADD ---
+# Create a custom global function that can be used in any template.
+# This function takes a template string and a context dict, and renders it.
+def render_template_string(template_string: str, **context) -> str:
+    """Renders a template from a string."""
+    template = templates.env.from_string(template_string)
+    return template.render(**context)
+
+# Register the function as a global for the Jinja2 environment
+templates.env.globals['render_template_string'] = render_template_string
+# --- END OF NEW CODE BLOCK ---
+
+# Dependency
 def get_database():
     yield from get_db()
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, db: sqlite3.Connection = Depends(get_database)):
-    # Redirect to dashboard or study if there are cards to review
-    kanji_to_review = crud.get_kanji_for_review(db, date.today())
-    if kanji_to_review:
-        return RedirectResponse(url="/study")
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/", response_class=RedirectResponse)
+async def read_root():
+    """Redirects the root URL to the main decks page."""
+    return RedirectResponse(url="/decks")
 
-@app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request, db: sqlite3.Connection = Depends(get_database)):
-    all_kanji = crud.get_all_kanji(db)
-    kanji_for_review = crud.get_kanji_for_review(db, date.today())
-    # Calculate some progress metrics
-    total_kanji = len(all_kanji)
-    reviewed_kanji = len([k for k in all_kanji if k.reviews > 0])
-    mastery_percentage = (reviewed_kanji / total_kanji * 100) if total_kanji > 0 else 0
+@app.get("/decks", response_class=HTMLResponse)
+async def list_decks(request: Request, db: sqlite3.Connection = Depends(get_database)):
+    """Displays a list of all created decks."""
+    decks = crud.get_all_decks(db)
+    return templates.TemplateResponse("decks.html", {"request": request, "decks": decks})
 
-    return templates.TemplateResponse(
-        "dashboard.html",
-        {
-            "request": request,
-            "total_kanji": total_kanji,
-            "kanji_for_review_count": len(kanji_for_review),
-            "mastery_percentage": round(mastery_percentage, 1)
-        }
-    )
+@app.get("/add_deck", response_class=HTMLResponse)
+async def add_deck_page(request: Request):
+    """Shows the form to create a new deck."""
+    return templates.TemplateResponse("add_deck.html", {"request": request, "message": None, "error": None})
 
-@app.get("/study", response_class=HTMLResponse)
-async def study_kanji(request: Request, db: sqlite3.Connection = Depends(get_database)):
-    kanji_to_review = crud.get_kanji_for_review(db, date.today())
 
-    if not kanji_to_review:
-        return templates.TemplateResponse("study.html", {"request": request, "current_kanji": None, "message": "No kanji to review today!"})
+@app.post("/add_deck", response_class=HTMLResponse)
+async def add_deck_submit(
+    request: Request,
+    name: str = Form(...),
+    card_template: str = Form(...),
+    card_css: str = Form(...), # Add this line
+    deck_file: UploadFile = File(...),
+    db: sqlite3.Connection = Depends(get_database)
+):
+    """Processes the new deck form submission."""
+    try:
+        # Step 1: Create the Deck entity in the database
+        new_deck_model = models.DeckCreate(
+            name=name,
+            card_template=card_template,
+            card_css=card_css # Add this line
+        )
+        created_deck = crud.create_deck(db, new_deck_model)
 
-    # For simplicity, pick the first one. A real app might have a more complex order.
-    current_kanji = kanji_to_review[0]
+        # ... (rest of the function is the same) ...
+        # Step 2: Read and parse the uploaded JSON file
+        contents = await deck_file.read()
+        cards_data = json.loads(contents)
+
+        if not isinstance(cards_data, list):
+            raise ValueError("JSON file must contain a list of card objects.")
+
+        # Step 3: Create a card for each item in the JSON file
+        count = 0
+        for card_item in cards_data:
+            new_card_model = models.CardCreate(
+                deck_id=created_deck.id,
+                data=card_item
+            )
+            crud.create_card(db, new_card_model)
+            count += 1
+        
+        return RedirectResponse(url="/decks", status_code=303)
+
+    except sqlite3.IntegrityError:
+        error = f"A deck with the name '{name}' already exists."
+        # Pass form data back to re-populate the form on error
+        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "card_template": card_template, "card_css": card_css})
+    except (json.JSONDecodeError, ValueError) as e:
+        error = f"Invalid JSON file: {e}"
+        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "card_template": card_template, "card_css": card_css})
+    except Exception as e:
+        error = f"An unexpected error occurred: {e}"
+        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "card_template": card_template, "card_css": card_css})
+
+
+# Study session
+@app.get("/study/{deck_id}", response_class=HTMLResponse)
+async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
+    deck = crud.get_deck(db, deck_id)
+    if not deck:
+        return RedirectResponse(url="/decks")
+
+    cards_to_review = crud.get_cards_for_review(db, deck_id, date.today())
+
+    if not cards_to_review:
+        return templates.TemplateResponse(
+            "study.html",
+            {
+                "request": request,
+                "deck": deck,
+                "current_card": None,
+                "message": "No cards to review in this deck today. Well done!"
+            }
+        )
+
+    current_card = cards_to_review[0]
 
     return templates.TemplateResponse(
         "study.html",
         {
             "request": request,
-            "current_kanji": current_kanji,
-            "total_reviews_today": len(kanji_to_review) # Or count remaining
+            "deck": deck,
+            "current_card": current_card,
+            # We are NOT passing 'rendered_card_html' anymore.
+            "total_reviews_today": len(cards_to_review)
         }
     )
 
-@app.post("/submit_review", response_class=RedirectResponse)
+@app.post("/submit_review/{deck_id}", response_class=RedirectResponse)
 async def submit_review(
-    kanji_id: int = Form(...),
-    quality: int = Form(...), # 0-2 (Hard), 3 (Good), 4-5 (Easy)
+    deck_id: int,
+    card_id: int = Form(...),
+    quality: int = Form(...),
     db: sqlite3.Connection = Depends(get_database)
 ):
-    kanji = crud.get_kanji(db, kanji_id)
-    if not kanji:
-        return RedirectResponse(url="/study", status_code=303)
+    from app.srs_algorithm import sm2_algorithm
 
-    updated_kanji = sm2_algorithm(kanji, quality)
-    crud.update_kanji_review_data(
-        db, updated_kanji.id, updated_kanji.next_review_date,
-        updated_kanji.interval_days, updated_kanji.ease_factor,
-        updated_kanji.reviews, updated_kanji.last_reviewed_date
+    card = crud.get_card(db, card_id)
+    if not card:
+        return RedirectResponse(url=f"/study/{deck_id}", status_code=303)
+
+    # Use the existing SRS algorithm
+    updated_card = sm2_algorithm(card, quality)
+    
+    # Persist the changes to the database
+    crud.update_card_review_data(
+        db, updated_card.id, updated_card.next_review_date,
+        updated_card.interval_days, updated_card.ease_factor,
+        updated_card.reviews, updated_card.last_reviewed_date
     )
-    return RedirectResponse(url="/study", status_code=303)
 
-@app.get("/add_kanji", response_class=HTMLResponse)
-async def add_kanji_page(request: Request):
-    return templates.TemplateResponse("add_kanji.html", {"request": request, "message": None})
+    # Redirect back to the study page for the same deck to get the next card
+    return RedirectResponse(url=f"/study/{deck_id}", status_code=303)
 
-@app.post("/add_kanji", response_class=HTMLResponse)
-async def add_kanji_submit(
-    request: Request,
-    character: str = Form(...),
-    meaning: str = Form(...),
-    onyomi: Optional[str] = Form(None),
-    kunyomi: Optional[str] = Form(None),
-    grade: Optional[int] = Form(None),
-    stroke_count: Optional[int] = Form(None),
-    db: sqlite3.Connection = Depends(get_database)
-):
-    try:
-        new_kanji = models.KanjiCreate(
-            character=character,
-            meaning=meaning,
-            onyomi=onyomi,
-            kunyomi=kunyomi,
-            grade=grade,
-            stroke_count=stroke_count
-        )
-        crud.create_kanji(db, new_kanji)
-        message = f"Kanji '{character}' added successfully!"
-    except sqlite3.IntegrityError:
-        message = f"Kanji '{character}' already exists."
-    except Exception as e:
-        message = f"Error adding Kanji: {e}"
 
-    return templates.TemplateResponse("add_kanji.html", {"request": request, "message": message})
+@app.get("/progress/{deck_id}", response_class=HTMLResponse)
+async def deck_progress(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
+    deck = crud.get_deck(db, deck_id)
+    if not deck:
+        return RedirectResponse(url="/decks")
 
+    # Fetch all cards in the deck
+    all_cards = crud.get_all_cards_in_deck(db, deck_id)
+    
+    # Sort cards for a consistent view, e.g., by next review date
+    all_cards_sorted = sorted(all_cards, key=lambda c: c.next_review_date)
+
+    return templates.TemplateResponse(
+        "progress_deck.html",
+        {
+            "request": request,
+            "deck": deck,
+            "all_cards": all_cards_sorted
+        }
+    )
+
+# Settings endpoints remain for now
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request, db: sqlite3.Connection = Depends(get_database)):
-    # Retrieve current settings to display them
     current_new_cards_per_day = crud.get_setting(db, "new_cards_per_day") or "5"
     current_max_reviews_per_day = crud.get_setting(db, "max_reviews_per_day") or "20"
-
     return templates.TemplateResponse(
         "settings.html",
         {
@@ -153,57 +215,5 @@ async def update_settings(
             "new_cards_per_day": new_cards_per_day,
             "max_reviews_per_day": max_reviews_per_day,
             "message": message
-        }
-    )
-
-# Import Kanji from file endpoint
-@app.post("/import_kanji", response_class=RedirectResponse)
-async def import_kanji_file(request: Request, db: sqlite3.Connection = Depends(get_database)):
-    # This is a placeholder. You'd implement file upload logic here.
-    # For now, let's assume a hardcoded file.
-    import json
-    try:
-        with open("kanji_data/top100_kanji.json", "r", encoding="utf-8") as f:
-            kanji_list = json.load(f)
-
-        count = 0
-        for item in kanji_list:
-            try:
-                new_kanji = models.KanjiCreate(
-                    character=item['character'],
-                    meaning=item['meaning'],
-                    onyomi=item.get('onyomi'),
-                    kunyomi=item.get('kunyomi'),
-                    grade=item.get('grade'),
-                    stroke_count=item.get('stroke_count')
-                )
-                crud.create_kanji(db, new_kanji)
-                count += 1
-            except sqlite3.IntegrityError:
-                # print(f"Kanji '{item['character']}' already exists, skipping.")
-                pass # Skip existing kanji
-        print(f"Imported {count} new kanji from file.")
-        return RedirectResponse(url="/dashboard", status_code=303)
-    except FileNotFoundError:
-        print("Error: top100_kanji.json not found.")
-        return RedirectResponse(url="/add_kanji?error=file_not_found", status_code=303)
-    except Exception as e:
-        print(f"Error during import: {e}")
-        return RedirectResponse(url=f"/add_kanji?error={e}", status_code=303)
-
-
-@app.get("/progress", response_class=HTMLResponse)
-async def progress_page(request: Request, db: sqlite3.Connection = Depends(get_database)):
-    # Fetch all kanji to display their current status
-    all_kanji = crud.get_all_kanji(db)
-    
-    # Sort kanji, for example by number of reviews or next review date
-    all_kanji_sorted = sorted(all_kanji, key=lambda k: k.next_review_date)
-
-    return templates.TemplateResponse(
-        "progress.html",
-        {
-            "request": request,
-            "all_kanji": all_kanji_sorted
         }
     )
