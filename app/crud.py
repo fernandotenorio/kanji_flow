@@ -2,8 +2,8 @@
 
 import sqlite3
 import json
-from typing import List, Optional
-from datetime import datetime
+from typing import List, Optional, Dict
+from datetime import datetime, date
 from app.models import DeckCreate, Deck, CardCreate, Card, Settings
 
 # --- Helper function to parse a row into a Card model ---
@@ -18,8 +18,8 @@ def _row_to_card(row: sqlite3.Row) -> Optional[Card]:
 def create_deck(db: sqlite3.Connection, deck: DeckCreate) -> Deck:
     cursor = db.cursor()
     cursor.execute(
-        "INSERT INTO decks (name, card_template, card_css) VALUES (?, ?, ?)", # Add card_css
-        (deck.name, deck.card_template, deck.card_css) # Add deck.card_css
+        "INSERT INTO decks (name, card_template, card_css) VALUES (?, ?, ?)",
+        (deck.name, deck.card_template, deck.card_css)
     )
     db.commit()
     deck_id = cursor.lastrowid
@@ -60,74 +60,140 @@ def get_all_cards_in_deck(db: sqlite3.Connection, deck_id: int) -> List[Card]:
     cursor.execute("SELECT * FROM cards WHERE deck_id = ?", (deck_id,))
     return [_row_to_card(row) for row in cursor.fetchall()]
 
-def get_cards_for_review(
-    db: sqlite3.Connection,
-    deck_id: int,
-    current_date: datetime,
-    new_card_limit: int,
-    total_limit: int
-) -> List[Card]:
+def get_queue_counts(db: sqlite3.Connection, deck_id: int, new_card_limit: int) -> Dict[str, int]:
+    """Gets the count of cards in each queue for a given deck."""
+    cursor = db.cursor()
+    now_iso = datetime.now().isoformat()
+    today_iso = date.today().isoformat()
+
+    # Learning cards due now
+    cursor.execute(
+        "SELECT COUNT(*) FROM cards WHERE deck_id = ? AND state = 'learning' AND next_review_date <= ?",
+        (deck_id, now_iso)
+    )
+    learning_count = cursor.fetchone()[0]
+
+    # Review cards due today
+    cursor.execute(
+        "SELECT * FROM cards WHERE deck_id = ? AND state = 'review' AND next_review_date <= ?",
+        (deck_id, today_iso)
+    )
+    review_count = len(cursor.fetchall())
+
+    # New cards available today
+    # 1. Count how many new cards have already been introduced today.
+    # cursor.execute(
+    #     "SELECT COUNT(*) FROM cards WHERE deck_id = ? AND date(introduction_date) = ?",
+    #     (deck_id, today_iso)
+    # )
+    # new_cards_introduced_today = cursor.fetchone()[0]
+
+    # # 2. Calculate the number of "new card slots" remaining for today.
+    # # It can't be negative, so we use max(0, ...).
+    # remaining_new_slots = max(0, new_card_limit - new_cards_introduced_today)
+
+    # 3. Count how many cards are actually in the 'new' state.
+    cursor.execute(
+        "SELECT COUNT(*) FROM cards WHERE deck_id = ? AND state = 'new'",
+        (deck_id,)
+    )
+    actual_new_cards_in_deck = cursor.fetchone()[0]
+    
+    # 4. The number to display is the smaller of the remaining slots and the actual new cards available.
+    new_count = actual_new_cards_in_deck # min(remaining_new_slots, actual_new_cards_in_deck)
+    return {"learning": learning_count, "review": review_count, "new": new_count}
+
+
+def get_next_card_for_review(db: sqlite3.Connection, deck_id: int, new_card_limit: int, total_limit: int) -> Optional[Card]:
     """
-    Fetches cards for a review session, prioritizing due cards, then adding new cards.
-    The total number of cards is capped by total_limit.
+    Fetches the single most important card to review right now, based on Anki's queue priorities.
     """
     cursor = db.cursor()
-
-    # 1. Get all cards that are due for review (have been seen before)
-    # These are the highest priority. We order by date to show the most "overdue" first.
+    now_iso = datetime.now().isoformat()
+    today_iso = date.today().isoformat()
+    
+    # --- Priority 1: Learning cards due now ---
     cursor.execute(
         """SELECT * FROM cards 
-           WHERE deck_id = ? AND reviews > 0 AND next_review_date <= ?
-           ORDER BY next_review_date ASC""",
-        (deck_id, current_date.isoformat())
+           WHERE deck_id = ? AND state = 'learning' AND next_review_date <= ?
+           ORDER BY next_review_date ASC LIMIT 1""",
+        (deck_id, now_iso)
     )
-    due_review_cards = [_row_to_card(row) for row in cursor.fetchall()]
+    card = _row_to_card(cursor.fetchone())
+    if card:
+        return card
 
-    # 2. Get a limited number of new cards (have never been seen)
-    new_cards_to_add = []
-    if new_card_limit > 0:
+    # --- Priority 2: Review cards due today ---
+    cursor.execute(
+        """SELECT * FROM cards 
+           WHERE deck_id = ? AND state = 'review' AND date(next_review_date) <= ?           
+           ORDER BY next_review_date ASC LIMIT 1""",
+        (deck_id, today_iso)
+    )
+    card = _row_to_card(cursor.fetchone())
+    if card:
+        return card
+
+    # --- Priority 3: New cards, up to the daily limit ---
+    # Count how many new cards have been introduced today
+    cursor.execute(
+        "SELECT COUNT(*) FROM cards WHERE deck_id = ? AND date(introduction_date) = ?",
+        (deck_id, today_iso)
+    )
+    new_cards_introduced_today = cursor.fetchone()[0]
+    
+    if new_cards_introduced_today < new_card_limit:
         cursor.execute(
             """SELECT * FROM cards 
-               WHERE deck_id = ? AND reviews = 0
-               ORDER BY id ASC 
-               LIMIT ?""",
-            (deck_id, new_card_limit)
+               WHERE deck_id = ? AND state = 'new'
+               ORDER BY id ASC LIMIT 1""",
+            (deck_id,)
         )
-        new_cards_to_add = [_row_to_card(row) for row in cursor.fetchall()]
+        card = _row_to_card(cursor.fetchone())
+        if card:
+            return card
 
-    # 3. Combine the lists: due reviews first, then new cards
-    combined_session = due_review_cards + new_cards_to_add
-    
-    # 4. Enforce the total session limit (max_reviews_per_day)
-    if total_limit > 0:
-        return combined_session[:total_limit]
-    return combined_session
+    # If we reach here, there's nothing left to study for today
+    return None
 
 def create_card(db: sqlite3.Connection, card: CardCreate) -> Card:
     cursor = db.cursor()
     data_json = json.dumps(card.data)
+    # We must explicitly set next_review_date to prevent a NULL value
+    # that would fail Pydantic validation.
     cursor.execute(
-        "INSERT INTO cards (deck_id, data, next_review_date, last_reviewed_date) VALUES (?, ?, ?, ?)",
-        (card.deck_id, data_json, datetime.now().isoformat(), None) # Use datetime
+        "INSERT INTO cards (deck_id, data, next_review_date) VALUES (?, ?, ?)",
+        (card.deck_id, data_json, datetime.now().isoformat())
     )
     db.commit()
     card_id = cursor.lastrowid
     return get_card(db, card_id)
 
-def update_card_review_data(db: sqlite3.Connection, card_id: int, next_review_date: datetime, interval_days: float, ease_factor: float, reviews: int, last_reviewed_date: datetime) -> Optional[Card]:
+def update_card_review_data(db: sqlite3.Connection, card: Card) -> Optional[Card]:
     cursor = db.cursor()
+
+    # Convert introduction_date to ISO format if it exists
+    intro_date_iso = card.introduction_date.isoformat() if card.introduction_date else None
+
     cursor.execute(
         """UPDATE cards SET
             next_review_date = ?,
             interval_days = ?,
             ease_factor = ?,
             reviews = ?,
-            last_reviewed_date = ?
+            last_reviewed_date = ?,
+            state = ?,
+            learning_step = ?,
+            introduction_date = ?
            WHERE id = ?""",
-        (next_review_date.isoformat(), interval_days, ease_factor, reviews, last_reviewed_date.isoformat(), card_id)
+        (
+            card.next_review_date.isoformat(), card.interval_days, card.ease_factor,
+            card.reviews, card.last_reviewed_date.isoformat(), card.state,
+            card.learning_step, intro_date_iso, card.id
+        )
     )
     db.commit()
-    return get_card(db, card_id)
+    return get_card(db, card.id)
 
 def delete_card(db: sqlite3.Connection, card_id: int):
     cursor = db.cursor()
@@ -154,3 +220,22 @@ def get_all_settings(db: sqlite3.Connection) -> List[Settings]:
     cursor = db.cursor()
     cursor.execute("SELECT * FROM settings")
     return [Settings.model_validate(dict(row)) for row in cursor.fetchall()]
+
+def log_review(db: sqlite3.Connection, deck_id: int, card_id: int, quality: int):
+    """Inserts a record of a single review action into the history table."""
+    cursor = db.cursor()
+    cursor.execute(
+        "INSERT INTO review_history (deck_id, card_id, review_timestamp, quality) VALUES (?, ?, ?, ?)",
+        (deck_id, card_id, datetime.now().isoformat(), quality)
+    )
+    db.commit()
+
+def get_reviews_done_today(db: sqlite3.Connection, deck_id: int) -> int:
+    """Counts the number of review actions logged today for a specific deck."""
+    cursor = db.cursor()
+    today_iso = date.today().isoformat()
+    cursor.execute(
+        "SELECT COUNT(*) FROM review_history WHERE deck_id = ? AND date(review_timestamp) = ?",
+        (deck_id, today_iso)
+    )
+    return cursor.fetchone()[0]

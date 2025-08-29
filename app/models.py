@@ -39,6 +39,9 @@ class Card(CardCreate):
     ease_factor: float = 2.5
     reviews: int = 0
     last_reviewed_date: Optional[datetime] = None
+    state: str = 'new'
+    learning_step: int = 0
+    introduction_date: Optional[date] = None
 
     class Config:
         from_attributes = True

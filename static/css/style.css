@@ -274,3 +274,51 @@ body {
     font-size: 1.5em;
     font-family: 'Noto Sans JP', sans-serif;
 }
+
+/* --- DECK PAGE QUEUE COUNTS --- */
+.queue-counts {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 15px 0;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.queue-counts span {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: white;
+}
+
+.new-count { background-color: #3498db; } /* Blue for New */
+.learn-count { background-color: #e74c3c; } /* Red for Learning */
+.review-count { background-color: #27ae60; } /* Green for Review */
+
+/* --- DECK ACTIONS BUTTONS --- */
+.deck-actions {
+    /* position: absolute; */
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+}
+
+/* --- STUDY PAGE QUEUE COUNTS --- */
+.reviews-left {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.reviews-left span{
+    color: white;
+    padding: 2px 8px;
+}
+
+.daily-limit-info {
+    font-size: 0.9em;
+    color: #7f8c8d;
+    margin-top: 10px;
+}

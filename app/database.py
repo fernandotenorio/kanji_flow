@@ -42,7 +42,23 @@ def create_tables():
             ease_factor REAL DEFAULT 2.5,
             reviews INTEGER DEFAULT 0,
             last_reviewed_date TEXT,
+            state TEXT NOT NULL DEFAULT 'new', -- 'new', 'learning', 'review'
+            learning_step INTEGER NOT NULL DEFAULT 0,
+            introduction_date TEXT,
             FOREIGN KEY(deck_id) REFERENCES decks(id)
+        );
+    """)
+
+    # Table for logging every single review action
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS review_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            deck_id INTEGER NOT NULL,
+            card_id INTEGER NOT NULL,
+            review_timestamp TEXT NOT NULL,
+            quality INTEGER NOT NULL, -- The 1, 3, or 5 rating
+            FOREIGN KEY(deck_id) REFERENCES decks(id),
+            FOREIGN KEY(card_id) REFERENCES cards(id)
         );
     """)
     

@@ -24,9 +24,10 @@
                 <small>Space-separated, e.g., "10 1440" for 10 min, then 1 day.</small>
             </div>
             <div class="form-group">
-                <label for="graduating_interval">Graduating Interval (in days):</label>
+                <label for="graduating_interval">Graduating Interval (in minutes, FOR DEBUG):</label>
                 <input type="number" id="graduating_interval" name="graduating_interval" value="{{ deck.graduating_interval or '' }}" placeholder="Global: {{ global_graduating_interval }}" min="1">
-                <small>The first interval after finishing all learning steps.</small>
+                <!-- <small>The first interval after finishing all learning steps.</small> -->
+                 <small>DEBUG MODE: The first interval after finishing all learning steps (in minutes).</small>
             </div>
             <button type="submit" class="btn btn-primary">Save Deck Settings</button>
             <a href="/decks" class="btn btn-secondary">Back to Decks</a>

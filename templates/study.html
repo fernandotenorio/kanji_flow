@@ -2,7 +2,6 @@
 
 {% block page_title %}Study: {{ deck.name }}{% endblock %}
 
-{# This block correctly places the styles in the head tag #}
 {% block extra_css %}
     <style>
         {{ deck.card_css | safe }}
@@ -12,15 +11,6 @@
 {% block content %}
     {% if current_card %}
         <div class="kanji-card-container">
-
-            {#
-              This is the corrected rendering logic.
-              We call our new global function 'render_template_string'.
-              - The first argument is the template string from the deck.
-              - We then explicitly pass the 'current_card' variable into the sub-template,
-                naming it 'card' for the user's convenience.
-              - The result is HTML, so we use the '| safe' filter.
-            #}
             {{ render_template_string(deck.card_template, card=current_card) | safe }}
 
             <div class="review-buttons" style="margin-top: 20px;">
@@ -38,11 +28,13 @@
                 </form>
             </div>
         </div>
-        <p class="reviews-left" style="text-align: center; margin-top: 20px; color: #7f8c8d;">
-            {{ reviews_left }} / {{ total_reviews_today }} cards left in this session.
-        </p>
+        <div class="reviews-left" style="text-align: center; margin-top: 20px; color: #7f8c8d;">
+            <span class="new-count" title="New Cards">{{ queue_counts.new }}</span>
+            <span class="learn-count" title="Learning">{{ queue_counts.learning }}</span>
+            <span class="review-count" title="Due for Review">{{ queue_counts.review }}</span>
+        </div>
         <div style="text-align: center; margin-top: 10px;">
-            <a href="/end_session/{{ deck.id }}">End Session & Go to Decks</a>
+            <a href="/decks">Back to Decks</a>
         </div>
     {% else %}
         <div class="empty-state">

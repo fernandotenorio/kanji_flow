@@ -3,14 +3,31 @@
 {% block page_title %}Your Decks{% endblock %}
 {% block content %}
     <div class="dashboard-grid">
-        {% if decks %}
-            {% for deck in decks %}
-                <div class="card stat-card" style="padding-bottom: 50px; position: relative;">
-                    <h3>{{ deck.name }}</h3>
-                    <div style="">
-                        <a href="/study/{{ deck.id }}" class="btn btn-primary">Study</a>
-                        <a href="/progress/{{ deck.id }}" class="btn btn-secondary">Progress</a>
-                        <a href="/settings/{{ deck.id }}" class="btn btn-secondary" style="background-color: #7f8c8d;">Settings</a>
+        {% if decks_with_counts %}
+            {% for item in decks_with_counts %}
+                <div class="card stat-card">
+                    <h3>{{ item.deck.name }}</h3>
+
+                    <!-- Daily Limit Display -->
+                    <div class="daily-limit-info" title="Max Reviews Per Day setting for this deck">
+                        Reviews: {{item.reviews_done_today}} / {{ item.max_reviews_setting }}
+                    </div>
+                    <!-- <div class="daily-limit-info" title="New cards per day setting for this deck">
+                        New Cards Per Day: {{ item.new_cards_per_day_setting }}
+                    </div> -->
+
+                    <!-- Queue Counts -->
+                    <div class="queue-counts">
+                        <span class="new-count" title="New Cards">{{ item.counts.new }}</span>
+                        <span class="learn-count" title="Learning">{{ item.counts.learning }}</span>
+                        <span class="review-count" title="Due for Review">{{ item.counts.review }}</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="deck-actions">
+                        <a href="/study/{{ item.deck.id }}" class="btn btn-primary">Study</a>
+                        <a href="/progress/{{ item.deck.id }}" class="btn btn-secondary">Progress</a>
+                        <a href="/settings/{{ item.deck.id }}" class="btn btn-secondary" style="background-color: #7f8c8d;">Settings</a>
                     </div>
                 </div>
             {% endfor %}
