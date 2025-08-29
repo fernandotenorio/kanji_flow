@@ -45,10 +45,10 @@ def sm2_algorithm(
             # Otherwise, the card graduates
             else:
                 card.state = 'review'
-                # card.interval_days = graduating_interval_days
-                # card.next_review_date = datetime.now() + timedelta(days=graduating_interval_days)
                 card.interval_days = graduating_interval_days
-                card.next_review_date = datetime.now() + timedelta(minutes=graduating_interval_days)
+                card.next_review_date = datetime.now() + timedelta(days=graduating_interval_days)
+                # card.interval_days = graduating_interval_days
+                # card.next_review_date = datetime.now() + timedelta(minutes=graduating_interval_days)
         
         elif card.state == 'review':
             # This is the first review after graduation
@@ -62,7 +62,7 @@ def sm2_algorithm(
             if card.ease_factor < 1.3:
                 card.ease_factor = 1.3
             
-            #card.next_review_date = datetime.now() + timedelta(days=int(card.interval_days))
-            card.next_review_date = datetime.now() + timedelta(minutes=card.interval_days)
+            card.next_review_date = datetime.now() + timedelta(days=int(card.interval_days))
+            # card.next_review_date = datetime.now() + timedelta(minutes=card.interval_days)
 
     return card
