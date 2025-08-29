@@ -1,0 +1,1 @@
+1-Renomear container div "kanji-card-container" para "card-container" (templates/study.html)

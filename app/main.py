@@ -51,6 +51,7 @@ async def list_decks(request: Request, db: sqlite3.Connection = Depends(get_data
         effective_new_cards = deck.new_cards_per_day or global_new_cards
         effective_max_reviews = deck.max_reviews_per_day or global_max_reviews
         reviews_done_today = crud.get_reviews_done_today(db, deck.id)
+        new_cards_rated_today = crud.get_new_cards_rated_today(db, deck.id)
 
         counts = crud.get_queue_counts(db, deck.id, effective_new_cards)
         decks_with_counts.append({
@@ -58,7 +59,8 @@ async def list_decks(request: Request, db: sqlite3.Connection = Depends(get_data
             "counts": counts,
             "max_reviews_setting": effective_max_reviews,
             "new_cards_per_day_setting": effective_new_cards,
-            "reviews_done_today": reviews_done_today
+            "reviews_done_today": reviews_done_today,
+            "new_cards_rated_today": new_cards_rated_today
         })
 
     return templates.TemplateResponse("decks.html", {"request": request, "decks_with_counts": decks_with_counts})

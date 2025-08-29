@@ -239,3 +239,13 @@ def get_reviews_done_today(db: sqlite3.Connection, deck_id: int) -> int:
         (deck_id, today_iso)
     )
     return cursor.fetchone()[0]
+
+def get_new_cards_rated_today(db: sqlite3.Connection, deck_id: int) -> int:
+    """Counts how many new cards have had their first review today."""
+    cursor = db.cursor()
+    today_iso = date.today().isoformat()
+    cursor.execute(
+        "SELECT COUNT(*) FROM cards WHERE deck_id = ? AND date(introduction_date) = ?",
+        (deck_id, today_iso)
+    )
+    return cursor.fetchone()[0]
