@@ -35,6 +35,10 @@ MANIFEST
 *.manifest
 *.spec
 
+# Sqlite
+*.db
+
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
