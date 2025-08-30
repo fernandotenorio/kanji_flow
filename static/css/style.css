@@ -322,3 +322,38 @@ body {
     color: #7f8c8d;
     margin-top: 10px;
 }
+
+/* --- ADD DECK PAGE --- */
+.add-deck-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start; /* Aligns items to the top */
+}
+
+.preview-column {
+    flex: 1; /* Takes up half the space */
+    position: sticky; /* Stays in view while scrolling the form */
+    top: 20px;
+}
+
+.form-column {
+    flex: 1; /* Takes up the other half */
+}
+
+/* Make the form card inside the column take full width */
+.form-column .form-card {
+    max-width: none;
+}
+
+.card-preview-placeholder {
+    min-height: 200px;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    color: #7f8c8d;
+    background-color: #f9f9f9;
+}

@@ -3,24 +3,38 @@
 {% block page_title %}Add New Deck{% endblock %}
 
 {% block content %}
-<div class="card form-card">
-    <h3>Create a New Deck</h3>
-    {% if message %}
-        <p class="message" style="background-color: #dff0d8; color: #3c763d;">{{ message }}</p>
-    {% endif %}
-    {% if error %}
-        <p class="message" style="background-color: #f2dede; color: #a94442;">{{ error }}</p>
-    {% endif %}
-
-    <form action="/add_deck" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="name">Deck Name:</label>
-            <input type="text" id="name" name="name" value="{{ name or '' }}" autocomplete="off" required>
+<div class="add-deck-container">
+    
+    <!-- Left Column: Live Preview -->
+    <div class="preview-column">
+        <div class="card">
+            <h3>Card Preview</h3>
+            <div id="card-preview-area" class="card-preview-placeholder">
+                <p>Upload the Deck data using the form on the right to see a preview of your card.</p>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label for="card_template">Card Template (Jinja2 HTML):</label>
-            <textarea id="card_template" name="card_template" rows="10" style="width: 100%; font-family: monospace; padding: 5px;" required>
+    </div>
+
+    <!-- Right Column: Form -->
+    <div class="form-column">
+        <div class="card form-card">
+            <h3>Create a New Deck</h3>
+            {% if message %}
+                <p class="message" style="background-color: #dff0d8; color: #3c763d;">{{ message }}</p>
+            {% endif %}
+            {% if error %}
+                <p class="message" style="background-color: #f2dede; color: #a94442;">{{ error }}</p>
+            {% endif %}
+
+            <form action="/add_deck" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="name">Deck Name:</label>
+                    <input type="text" id="name" name="name" value="{{ name or '' }}" autocomplete="off" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="card_template">Card Template (Jinja2 HTML):</label>
+                    <textarea id="card_template" name="card_template" rows="10" style="width: 100%; font-family: monospace; padding: 5px;" required>
 {%- if card_template -%}
 {{- card_template -}}
 {%- else -%}
@@ -37,12 +51,12 @@
 {%- endraw -%}
 {%- endif -%}
 </textarea>
-            <small>Use `{% raw %}{{ card.data.your_json_key }}{% endraw %}` to access card data.</small>
-        </div>
+                    <small>Use `{% raw %}{{ card.data.your_json_key }}{% endraw %}` to access card data.</small>
+                </div>
 
-        <div class="form-group">
-            <label for="card_css">Card CSS:</label>
-            <textarea id="card_css" name="card_css" rows="10" style="width: 100%; font-family: monospace; padding: 5px;" required>
+                <div class="form-group">
+                    <label for="card_css">Card CSS:</label>
+                    <textarea id="card_css" name="card_css" rows="10" style="width: 100%; font-family: monospace; padding: 5px;" required>
 {%- if card_css -%}
 {{- card_css -}}
 {%- else -%}
@@ -53,15 +67,17 @@
 .btn-show-hide { background-color: #95a5a6; color: white; }
 {%- endif -%}
 </textarea>
-        </div>
+                </div>
 
-        <div class="form-group">
-            <label for="deck_file">Deck Data (JSON file):</label>
-            <input type="file" id="deck_file" name="deck_file" accept=".json" required>
-            <small>The file must be a JSON array of objects, e.g., `[{"front": "Q1", "back": "A1"}, ...]`</small>
-        </div>
+                <div class="form-group">
+                    <label for="deck_file">Deck Data (JSON file):</label>
+                    <input type="file" id="deck_file" name="deck_file" accept=".json" required>
+                    <small>The file must be a JSON array of objects, e.g., `[{"front": "Q1", "back": "A1"}, ...]`</small>
+                </div>
 
-        <button type="submit" class="btn btn-primary">Create Deck</button>
-    </form>
+                <button type="submit" class="btn btn-primary">Create Deck</button>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}

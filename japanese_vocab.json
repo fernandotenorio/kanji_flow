@@ -2,21 +2,547 @@
     {
         "vocab": "猫",
         "reading": "ねこ",
-        "meaning": "Cat"
+        "meaning": "Cat",
+        "romaji": "neko"
     },
     {
         "vocab": "犬",
         "reading": "いぬ",
-        "meaning": "Dog"
+        "meaning": "Dog",
+        "romaji": "inu"
     },
     {
         "vocab": "学校",
         "reading": "がっこう",
-        "meaning": "School"
+        "meaning": "School",
+        "romaji": "gakkou"
     },
     {
         "vocab": "食べる",
         "reading": "たべる",
-        "meaning": "To eat"
+        "meaning": "To eat",
+        "romaji": "taberu"
+    },
+    {
+        "vocab": "人",
+        "reading": "ひと",
+        "meaning": "Person",
+        "romaji": "hito"
+    },
+    {
+        "vocab": "私",
+        "reading": "わたし",
+        "meaning": "I, me",
+        "romaji": "watashi"
+    },
+    {
+        "vocab": "あなた",
+        "reading": "あなた",
+        "meaning": "You",
+        "romaji": "anata"
+    },
+    {
+        "vocab": "彼",
+        "reading": "かれ",
+        "meaning": "He, boyfriend",
+        "romaji": "kare"
+    },
+    {
+        "vocab": "彼女",
+        "reading": "かのじょ",
+        "meaning": "She, girlfriend",
+        "romaji": "kanojo"
+    },
+    {
+        "vocab": "友達",
+        "reading": "ともだち",
+        "meaning": "Friend",
+        "romaji": "tomodachi"
+    },
+    {
+        "vocab": "家",
+        "reading": "いえ",
+        "meaning": "House, home",
+        "romaji": "ie"
+    },
+    {
+        "vocab": "本",
+        "reading": "ほん",
+        "meaning": "Book",
+        "romaji": "hon"
+    },
+    {
+        "vocab": "車",
+        "reading": "くるま",
+        "meaning": "Car",
+        "romaji": "kuruma"
+    },
+    {
+        "vocab": "自転車",
+        "reading": "じてんしゃ",
+        "meaning": "Bicycle",
+        "romaji": "jitensha"
+    },
+    {
+        "vocab": "電車",
+        "reading": "でんしゃ",
+        "meaning": "Train",
+        "romaji": "densha"
+    },
+    {
+        "vocab": "駅",
+        "reading": "えき",
+        "meaning": "Station",
+        "romaji": "eki"
+    },
+    {
+        "vocab": "先生",
+        "reading": "せんせい",
+        "meaning": "Teacher",
+        "romaji": "sensei"
+    },
+    {
+        "vocab": "学生",
+        "reading": "がくせい",
+        "meaning": "Student",
+        "romaji": "gakusei"
+    },
+    {
+        "vocab": "時間",
+        "reading": "じかん",
+        "meaning": "Time",
+        "romaji": "jikan"
+    },
+    {
+        "vocab": "日",
+        "reading": "ひ",
+        "meaning": "Day, sun",
+        "romaji": "hi"
+    },
+    {
+        "vocab": "今日",
+        "reading": "きょう",
+        "meaning": "Today",
+        "romaji": "kyou"
+    },
+    {
+        "vocab": "明日",
+        "reading": "あした",
+        "meaning": "Tomorrow",
+        "romaji": "ashita"
+    },
+    {
+        "vocab": "昨日",
+        "reading": "きのう",
+        "meaning": "Yesterday",
+        "romaji": "kinou"
+    },
+    {
+        "vocab": "今",
+        "reading": "いま",
+        "meaning": "Now",
+        "romaji": "ima"
+    },
+    {
+        "vocab": "時",
+        "reading": "とき",
+        "meaning": "Time, moment",
+        "romaji": "toki"
+    },
+    {
+        "vocab": "朝",
+        "reading": "あさ",
+        "meaning": "Morning",
+        "romaji": "asa"
+    },
+    {
+        "vocab": "昼",
+        "reading": "ひる",
+        "meaning": "Noon, daytime",
+        "romaji": "hiru"
+    },
+    {
+        "vocab": "夜",
+        "reading": "よる",
+        "meaning": "Night, evening",
+        "romaji": "yoru"
+    },
+    {
+        "vocab": "水",
+        "reading": "みず",
+        "meaning": "Water",
+        "romaji": "mizu"
+    },
+    {
+        "vocab": "お茶",
+        "reading": "おちゃ",
+        "meaning": "Tea",
+        "romaji": "ocha"
+    },
+    {
+        "vocab": "ご飯",
+        "reading": "ごはん",
+        "meaning": "Rice, meal",
+        "romaji": "gohan"
+    },
+    {
+        "vocab": "飲む",
+        "reading": "のむ",
+        "meaning": "To drink",
+        "romaji": "nomu"
+    },
+    {
+        "vocab": "行く",
+        "reading": "いく",
+        "meaning": "To go",
+        "romaji": "iku"
+    },
+    {
+        "vocab": "来る",
+        "reading": "くる",
+        "meaning": "To come",
+        "romaji": "kuru"
+    },
+    {
+        "vocab": "見る",
+        "reading": "みる",
+        "meaning": "To see, to watch",
+        "romaji": "miru"
+    },
+    {
+        "vocab": "聞く",
+        "reading": "きく",
+        "meaning": "To listen, to ask",
+        "romaji": "kiku"
+    },
+    {
+        "vocab": "話す",
+        "reading": "はなす",
+        "meaning": "To speak",
+        "romaji": "hanasu"
+    },
+    {
+        "vocab": "読む",
+        "reading": "よむ",
+        "meaning": "To read",
+        "romaji": "yomu"
+    },
+    {
+        "vocab": "書く",
+        "reading": "かく",
+        "meaning": "To write",
+        "romaji": "kaku"
+    },
+    {
+        "vocab": "買う",
+        "reading": "かう",
+        "meaning": "To buy",
+        "romaji": "kau"
+    },
+    {
+        "vocab": "売る",
+        "reading": "うる",
+        "meaning": "To sell",
+        "romaji": "uru"
+    },
+    {
+        "vocab": "働く",
+        "reading": "はたらく",
+        "meaning": "To work",
+        "romaji": "hataraku"
+    },
+    {
+        "vocab": "使う",
+        "reading": "つかう",
+        "meaning": "To use",
+        "romaji": "tsukau"
+    },
+    {
+        "vocab": "作る",
+        "reading": "つくる",
+        "meaning": "To make",
+        "romaji": "tsukuru"
+    },
+    {
+        "vocab": "分かる",
+        "reading": "わかる",
+        "meaning": "To understand",
+        "romaji": "wakaru"
+    },
+    {
+        "vocab": "分ける",
+        "reading": "わける",
+        "meaning": "To divide, to share",
+        "romaji": "wakeru"
+    },
+    {
+        "vocab": "知る",
+        "reading": "しる",
+        "meaning": "To know",
+        "romaji": "shiru"
+    },
+    {
+        "vocab": "思う",
+        "reading": "おもう",
+        "meaning": "To think",
+        "romaji": "omou"
+    },
+    {
+        "vocab": "愛",
+        "reading": "あい",
+        "meaning": "Love",
+        "romaji": "ai"
+    },
+    {
+        "vocab": "好き",
+        "reading": "すき",
+        "meaning": "Like",
+        "romaji": "suki"
+    },
+    {
+        "vocab": "嫌い",
+        "reading": "きらい",
+        "meaning": "Dislike",
+        "romaji": "kirai"
+    },
+    {
+        "vocab": "大きい",
+        "reading": "おおきい",
+        "meaning": "Big",
+        "romaji": "ookii"
+    },
+    {
+        "vocab": "小さい",
+        "reading": "ちいさい",
+        "meaning": "Small",
+        "romaji": "chiisai"
+    },
+    {
+        "vocab": "新しい",
+        "reading": "あたらしい",
+        "meaning": "New",
+        "romaji": "atarashii"
+    },
+    {
+        "vocab": "古い",
+        "reading": "ふるい",
+        "meaning": "Old (not person)",
+        "romaji": "furui"
+    },
+    {
+        "vocab": "良い",
+        "reading": "いい",
+        "meaning": "Good",
+        "romaji": "ii"
+    },
+    {
+        "vocab": "悪い",
+        "reading": "わるい",
+        "meaning": "Bad",
+        "romaji": "warui"
+    },
+    {
+        "vocab": "多い",
+        "reading": "おおい",
+        "meaning": "Many",
+        "romaji": "ooi"
+    },
+    {
+        "vocab": "少ない",
+        "reading": "すくない",
+        "meaning": "Few",
+        "romaji": "sukunai"
+    },
+    {
+        "vocab": "高い",
+        "reading": "たかい",
+        "meaning": "Tall, high, expensive",
+        "romaji": "takai"
+    },
+    {
+        "vocab": "安い",
+        "reading": "やすい",
+        "meaning": "Cheap",
+        "romaji": "yasui"
+    },
+    {
+        "vocab": "長い",
+        "reading": "ながい",
+        "meaning": "Long",
+        "romaji": "nagai"
+    },
+    {
+        "vocab": "短い",
+        "reading": "みじかい",
+        "meaning": "Short",
+        "romaji": "mijikai"
+    },
+    {
+        "vocab": "早い",
+        "reading": "はやい",
+        "meaning": "Early, fast",
+        "romaji": "hayai"
+    },
+    {
+        "vocab": "遅い",
+        "reading": "おそい",
+        "meaning": "Late, slow",
+        "romaji": "osoi"
+    },
+    {
+        "vocab": "白",
+        "reading": "しろ",
+        "meaning": "White",
+        "romaji": "shiro"
+    },
+    {
+        "vocab": "黒",
+        "reading": "くろ",
+        "meaning": "Black",
+        "romaji": "kuro"
+    },
+    {
+        "vocab": "赤",
+        "reading": "あか",
+        "meaning": "Red",
+        "romaji": "aka"
+    },
+    {
+        "vocab": "青",
+        "reading": "あお",
+        "meaning": "Blue",
+        "romaji": "ao"
+    },
+    {
+        "vocab": "緑",
+        "reading": "みどり",
+        "meaning": "Green",
+        "romaji": "midori"
+    },
+    {
+        "vocab": "黄色",
+        "reading": "きいろ",
+        "meaning": "Yellow",
+        "romaji": "kiiro"
+    },
+    {
+        "vocab": "雨",
+        "reading": "あめ",
+        "meaning": "Rain",
+        "romaji": "ame"
+    },
+    {
+        "vocab": "雪",
+        "reading": "ゆき",
+        "meaning": "Snow",
+        "romaji": "yuki"
+    },
+    {
+        "vocab": "空",
+        "reading": "そら",
+        "meaning": "Sky",
+        "romaji": "sora"
+    },
+    {
+        "vocab": "山",
+        "reading": "やま",
+        "meaning": "Mountain",
+        "romaji": "yama"
+    },
+    {
+        "vocab": "川",
+        "reading": "かわ",
+        "meaning": "River",
+        "romaji": "kawa"
+    },
+    {
+        "vocab": "海",
+        "reading": "うみ",
+        "meaning": "Sea",
+        "romaji": "umi"
+    },
+    {
+        "vocab": "花",
+        "reading": "はな",
+        "meaning": "Flower",
+        "romaji": "hana"
+    },
+    {
+        "vocab": "木",
+        "reading": "き",
+        "meaning": "Tree",
+        "romaji": "ki"
+    },
+    {
+        "vocab": "森",
+        "reading": "もり",
+        "meaning": "Forest",
+        "romaji": "mori"
+    },
+    {
+        "vocab": "空気",
+        "reading": "くうき",
+        "meaning": "Air",
+        "romaji": "kuuki"
+    },
+    {
+        "vocab": "天気",
+        "reading": "てんき",
+        "meaning": "Weather",
+        "romaji": "tenki"
+    },
+    {
+        "vocab": "風",
+        "reading": "かぜ",
+        "meaning": "Wind, cold/illness",
+        "romaji": "kaze"
+    },
+    {
+        "vocab": "体",
+        "reading": "からだ",
+        "meaning": "Body",
+        "romaji": "karada"
+    },
+    {
+        "vocab": "頭",
+        "reading": "あたま",
+        "meaning": "Head",
+        "romaji": "atama"
+    },
+    {
+        "vocab": "目",
+        "reading": "め",
+        "meaning": "Eye",
+        "romaji": "me"
+    },
+    {
+        "vocab": "耳",
+        "reading": "みみ",
+        "meaning": "Ear",
+        "romaji": "mimi"
+    },
+    {
+        "vocab": "口",
+        "reading": "くち",
+        "meaning": "Mouth",
+        "romaji": "kuchi"
+    },
+    {
+        "vocab": "手",
+        "reading": "て",
+        "meaning": "Hand",
+        "romaji": "te"
+    },
+    {
+        "vocab": "足",
+        "reading": "あし",
+        "meaning": "Foot, leg",
+        "romaji": "ashi"
+    },
+    {
+        "vocab": "心",
+        "reading": "こころ",
+        "meaning": "Heart, mind",
+        "romaji": "kokoro"
     }
 ]

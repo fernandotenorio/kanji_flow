@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
     // --- Logic for Active Sidebar Link ---
     const currentLocation = window.location.pathname;
     const navLinks = document.querySelectorAll('.sidebar nav ul li a');
@@ -31,4 +30,86 @@ document.addEventListener('DOMContentLoaded', function() {
             link.classList.add('active');
         }
     });
+
+    // Live Preview for Add Deck Page ---
+    const deckFileInput = document.getElementById('deck_file');
+    const templateInput = document.getElementById('card_template');
+    const cssInput = document.getElementById('card_css');
+    const previewArea = document.getElementById('card-preview-area');
+    
+    if (deckFileInput && templateInput && cssInput && previewArea) {
+        let previewCardData = null;
+
+        // --- START OF MODIFICATION ---
+
+        // Function to handle the toggle logic for the preview card
+        const setupPreviewCardInteractivity = () => {
+            const previewToggleButton = previewArea.querySelector('#toggleBtn');
+            const previewBackContent = previewArea.querySelector('#cardBack');
+            
+            if (previewToggleButton && previewBackContent) {
+                // We use a direct listener here because we call this function
+                // every time the preview is updated, ensuring the new button gets the listener.
+                previewToggleButton.addEventListener('click', () => {
+                    const isHidden = previewBackContent.style.display === 'none' || previewBackContent.style.display === '';
+                    if (isHidden) {
+                        previewBackContent.style.display = 'block';
+                        previewToggleButton.textContent = 'Hide Answer';
+                    } else {
+                        previewBackContent.style.display = 'none';
+                        previewToggleButton.textContent = 'Show Answer';
+                    }
+                });
+            }
+        };
+
+        // Function to render the preview
+        const updatePreview = () => {
+            if (!previewCardData) return;
+
+            const templateStr = templateInput.value;
+            const cssStr = cssInput.value;
+
+            let renderedHtml = templateStr.replace(/{{\s*card\.data\.(\w+)\s*}}/g, (match, key) => {
+                return previewCardData[key] || `[${key} not found]`;
+            });
+            
+            previewArea.innerHTML = `<style>${cssStr}</style>${renderedHtml}`;
+            
+            previewArea.classList.remove('card-preview-placeholder');
+
+            // After updating the HTML, find the new button and add the listener
+            setupPreviewCardInteractivity();
+        };
+
+        // --- END OF MODIFICATION ---
+
+        // 1. Listen for file selection
+        deckFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = JSON.parse(e.target.result);
+                    if (Array.isArray(content) && content.length > 0) {
+                        previewCardData = content[0];
+                        updatePreview();
+                    } else {
+                        previewArea.innerHTML = '<p style="color: red;">Error: JSON must be an array of card objects.</p>';
+                        previewCardData = null;
+                    }
+                } catch (error) {
+                    previewArea.innerHTML = `<p style="color: red;">Error parsing JSON: ${error.message}</p>`;
+                    previewCardData = null;
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // 2. Listen for changes in the template and CSS textareas
+        templateInput.addEventListener('input', updatePreview);
+        cssInput.addEventListener('input', updatePreview);
+    }
 });
