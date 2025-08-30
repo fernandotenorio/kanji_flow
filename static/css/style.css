@@ -116,7 +116,7 @@ body {
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 20px;
 }
 
@@ -179,11 +179,11 @@ body {
 
 
 /* --- STUDY PAGE --- */
-.kanji-card-container {
+.card-container {
     text-align: center;
 }
 
-.kanji-card {
+/* .kanji-card {
     background: white;
     padding: 40px;
     border-radius: 10px;
@@ -201,7 +201,7 @@ body {
     margin-top: 20px;
     border-top: 1px solid #eee;
     padding-top: 20px;
-}
+} */
 
 .review-buttons {
     margin-top: 20px;
@@ -298,6 +298,13 @@ body {
 /* --- DECK ACTIONS BUTTONS --- */
 .deck-actions {
     display: flex;
+}
+
+.deck-actions .btn {
+    display: inline-flex; /* Use flexbox for layout */
+    align-items: center;  /* Vertically align icon and text */
+    justify-content: center; /* Horizontally center content */
+    gap: 6px;             /* Add a small space between icon and text */
 }
 
 /* --- STUDY PAGE QUEUE COUNTS --- */

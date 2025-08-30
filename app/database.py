@@ -3,11 +3,13 @@
 import sqlite3
 from typing import Optional
 
-DATABASE_URL = "kanji_flow.db"
+DATABASE_URL = "memo_flow.db"
 
 def get_db():    
     conn = sqlite3.connect(DATABASE_URL, check_same_thread=False)
     conn.row_factory = sqlite3.Row # Allows accessing columns by name
+    conn.execute("PRAGMA foreign_keys = ON")
+
     try:
         yield conn
     finally:
@@ -45,7 +47,7 @@ def create_tables():
             state TEXT NOT NULL DEFAULT 'new', -- 'new', 'learning', 'review'
             learning_step INTEGER NOT NULL DEFAULT 0,
             introduction_date TEXT,
-            FOREIGN KEY(deck_id) REFERENCES decks(id)
+            FOREIGN KEY(deck_id) REFERENCES decks(id) ON DELETE CASCADE
         );
     """)
 
@@ -57,8 +59,8 @@ def create_tables():
             card_id INTEGER NOT NULL,
             review_timestamp TEXT NOT NULL,
             quality INTEGER NOT NULL, -- The 1, 3, or 5 rating
-            FOREIGN KEY(deck_id) REFERENCES decks(id),
-            FOREIGN KEY(card_id) REFERENCES cards(id)
+            FOREIGN KEY(deck_id) REFERENCES decks(id) ON DELETE CASCADE,
+            FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE
         );
     """)
     

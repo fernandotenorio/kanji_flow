@@ -112,4 +112,43 @@ document.addEventListener('DOMContentLoaded', function() {
         templateInput.addEventListener('input', updatePreview);
         cssInput.addEventListener('input', updatePreview);
     }
+
+    // --- Logic for Custom Delete Confirmation Modal ---
+    const deleteBtn = document.getElementById('deleteDeckBtn');
+    const deleteModal = document.getElementById('deleteDeckModal');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteDeckForm = document.getElementById('deleteDeckForm');
+    const modalDeckName = document.getElementById('modalDeckName');
+
+    // Only run this logic if we are on a page with the delete button
+    if (deleteBtn && deleteModal && deleteDeckForm) {
+
+        // Show the modal when the main delete button is clicked
+        deleteBtn.addEventListener('click', function() {
+            const deckName = this.getAttribute('data-deck-name');
+            modalDeckName.textContent = `'${deckName}'`; // Update modal text
+            deleteModal.classList.add('is-visible');
+        });
+
+        // Function to hide the modal
+        const hideModal = () => {
+            deleteModal.classList.remove('is-visible');
+        };
+
+        // Hide modal on cancel button click or overlay click
+        cancelDeleteBtn.addEventListener('click', hideModal);
+        deleteModal.addEventListener('click', function(event) {
+            // Only close if the overlay itself is clicked, not the content
+            if (event.target === deleteModal) {
+                hideModal();
+            }
+        });
+
+        // Handle the final confirmation
+        confirmDeleteBtn.addEventListener('click', function() {
+            // Submit the form to perform the deletion
+            deleteDeckForm.submit();
+        });
+    }
 });

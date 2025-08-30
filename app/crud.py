@@ -48,6 +48,11 @@ def update_deck_settings(db: sqlite3.Connection, deck_id: int, new_cards: Option
     db.commit()
     return get_deck(db, deck_id)
 
+def delete_deck(db: sqlite3.Connection, deck_id: int):
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM decks WHERE id = ?", (deck_id,))
+    db.commit()
+
 # --- Card CRUD ---
 def get_card(db: sqlite3.Connection, card_id: int) -> Optional[Card]:
     cursor = db.cursor()

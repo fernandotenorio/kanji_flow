@@ -1,1 +1,3 @@
-1-Renomear container div "kanji-card-container" para "card-container" (templates/study.html)
+1-Tela para editar cards.
+2-Paginacao
+3-Graficos e Estatisticas

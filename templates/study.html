@@ -10,7 +10,7 @@
 
 {% block content %}
     {% if current_card %}
-        <div class="kanji-card-container">
+        <div class="card-container">
             {{ render_template_string(deck.card_template, card=current_card) | safe }}
 
             <div class="review-buttons" style="margin-top: 20px;">

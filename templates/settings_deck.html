@@ -2,6 +2,10 @@
 
 {% block page_title %}Settings: {{ deck.name }}{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/modal.css">
+{% endblock %}
+
 {% block content %}
     <div class="card form-card">
         <h3>Deck-Specific Settings</h3>
@@ -31,5 +35,31 @@
             <button type="submit" class="btn btn-primary">Save Deck Settings</button>
             <a href="/decks" class="btn btn-secondary">Back to Decks</a>
         </form>
+    </div>
+
+    <!-- Delete Deck Section -->
+    <div class="card form-card" style="margin-top: 20px; border-top: 3px solid #e74c3c;">
+        <h3>Danger Zone</h3>
+        <p>Deleting a deck is permanent and cannot be undone. All cards and review history associated with this deck will be lost.</p>
+        <form action="/delete_deck/{{ deck.id }}" method="post" id="deleteDeckForm" style="margin-top: 15px;">
+             <!-- The button is now a trigger, not a submit button. It holds the deck name in a data attribute. -->
+             <button type="button" id="deleteDeckBtn" class="btn btn-danger" data-deck-name="{{ deck.name }}">
+                <i class="fas fa-trash-alt"></i> Delete This Deck
+            </button>
+        </form>
+    </div>
+
+    <!-- NEW: Custom Confirmation Modal -->
+    <div class="modal-overlay" id="deleteDeckModal">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you absolutely sure you want to delete the <strong id="modalDeckName"></strong> deck? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button type="button" id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Yes, Delete It
+                </button>
+            </div>
+        </div>
     </div>
 {% endblock %}

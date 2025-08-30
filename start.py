@@ -7,7 +7,7 @@ HOST = os.getenv("HOST", "127.0.0.1")
 PORT = int(os.getenv("PORT", "8000"))
 
 if __name__ == "__main__":
-    print(f"Starting Kanji Flow server at http://{HOST}:{PORT}")
+    print(f"Starting Memo Flow server at http://{HOST}:{PORT}")
 
     # uvicorn.run() is the programmatic way to start the server.
     # "app.main:app": Uvicorn will look for the 'app' instance in the 'app/main.py' file.

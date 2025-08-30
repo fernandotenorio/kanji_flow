@@ -259,6 +259,11 @@ async def update_deck_settings_submit(
         }
     )
 
+@app.post("/delete_deck/{deck_id}", response_class=RedirectResponse)
+async def delete_deck_submit(deck_id: int, db: sqlite3.Connection = Depends(get_database)):
+    crud.delete_deck(db, deck_id)
+    return RedirectResponse(url="/decks", status_code=303)
+
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request, db: sqlite3.Connection = Depends(get_database)):
     current_new_cards_per_day = crud.get_setting(db, "new_cards_per_day") or "5"
