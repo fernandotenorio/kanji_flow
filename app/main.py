@@ -20,6 +20,7 @@ app = FastAPI()
 # --- NO MORE SESSION MIDDLEWARE ---
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/media", StaticFiles(directory="media"), name="media")
 templates = Jinja2Templates(directory="templates")
 
 # --- Custom Jinja2 global function (Unchanged) ---

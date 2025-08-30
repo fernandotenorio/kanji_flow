@@ -36,11 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const templateInput = document.getElementById('card_template');
     const cssInput = document.getElementById('card_css');
     const previewArea = document.getElementById('card-preview-area');
+    const refreshPreviewBtn = document.getElementById('refreshPreviewBtn');
     
     if (deckFileInput && templateInput && cssInput && previewArea) {
         let previewCardData = null;
-
-        // --- START OF MODIFICATION ---
 
         // Function to handle the toggle logic for the preview card
         const setupPreviewCardInteractivity = () => {
@@ -75,14 +74,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             previewArea.innerHTML = `<style>${cssStr}</style>${renderedHtml}`;
-            
+
+            // Implement Cache Busting for the Live Preview ---
+            // This ensures that media is always re-fetched from the server.
+            const timestamp = Date.now(); // Get a unique value
+            const mediaElements = previewArea.querySelectorAll('img, audio, source');
+
+            mediaElements.forEach(el => {
+                // Check if src exists and doesn't already have a query string
+                if (el.src && el.src.indexOf('?') === -1) {
+                    el.src = `${el.src}?t=${timestamp}`;
+                }
+            });
+            // --- END OF CACHE BUSTING ---
+
             previewArea.classList.remove('card-preview-placeholder');
 
             // After updating the HTML, find the new button and add the listener
             setupPreviewCardInteractivity();
         };
 
-        // --- END OF MODIFICATION ---
+         // Useful when the user changes media folder but template and css are already correct
+        if (refreshPreviewBtn) {
+            refreshPreviewBtn.addEventListener('click', updatePreview);
+        }
 
         // 1. Listen for file selection
         deckFileInput.addEventListener('change', (event) => {
