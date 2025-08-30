@@ -4,18 +4,7 @@
 
 {% block content %}
 <div class="add-deck-container">
-    
-    <!-- Left Column: Live Preview -->
-    <div class="preview-column">
-        <div class="card">
-            <h3>Card Preview</h3>
-            <div id="card-preview-area" class="card-preview-placeholder">
-                <p>Upload the Deck data using the form on the right to see a preview of your card.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Column: Form -->
+    <!-- Left Column: Form -->
     <div class="form-column">
         <div class="card form-card">
             <h3>Create a New Deck</h3>
@@ -77,6 +66,16 @@
 
                 <button type="submit" class="btn btn-primary">Create Deck</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Right Column: Live Preview -->
+    <div class="preview-column">
+        <div class="card">
+            <h3>Card Preview</h3>
+            <div id="card-preview-area" class="card-preview-placeholder">
+                <p>Upload the Deck data using the form on the right to see a preview of your card.</p>
+            </div>
         </div>
     </div>
 </div>

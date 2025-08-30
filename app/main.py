@@ -46,6 +46,11 @@ async def list_decks(request: Request, db: sqlite3.Connection = Depends(get_data
     # Get global settings as fallbacks
     global_new_cards = int(crud.get_setting(db, "new_cards_per_day") or "5")
     global_max_reviews = int(crud.get_setting(db, "max_reviews_per_day") or "20")
+
+    # --- NEW: Fetch global learning steps and graduating interval ---
+    global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440" # Default as per sm2_algorithm
+    global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4") # Default as per sm2_algorithm
+    # --- END NEW ---
     
     for deck in decks_raw:
         effective_new_cards = deck.new_cards_per_day or global_new_cards
@@ -109,6 +114,12 @@ async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = De
     # Determine effective settings
     global_new_cards = int(crud.get_setting(db, "new_cards_per_day") or "5")
     global_max_reviews = int(crud.get_setting(db, "max_reviews_per_day") or "20")
+
+    # --- NEW: Fetch global learning steps and graduating interval ---
+    global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
+    global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4")
+    # --- END NEW ---
+
     effective_new_cards = deck.new_cards_per_day or global_new_cards
     effective_max_reviews = deck.max_reviews_per_day or global_max_reviews
 
@@ -173,8 +184,6 @@ async def submit_review(
     return RedirectResponse(url=f"/study/{deck_id}", status_code=303)        
 
 
-# --- Progress and Settings endpoints remain largely the same ---
-
 @app.get("/progress/{deck_id}", response_class=HTMLResponse)
 async def deck_progress(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
     deck = crud.get_deck(db, deck_id)
@@ -191,10 +200,37 @@ async def deck_settings_page(request: Request, deck_id: int, db: sqlite3.Connect
         return RedirectResponse(url="/decks")
     global_new = crud.get_setting(db, "new_cards_per_day") or "5"
     global_max = crud.get_setting(db, "max_reviews_per_day") or "20"
-    return templates.TemplateResponse("settings_deck.html", {"request": request, "deck": deck, "global_new_cards_per_day": global_new, "global_max_reviews_per_day": global_max, "message": None})
+
+    # --- NEW: Fetch global learning steps and graduating interval ---
+    global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
+    global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4")
+    # --- END NEW ---
+
+    return templates.TemplateResponse(
+        "settings_deck.html",
+        {
+            "request": request,
+            "deck": deck,
+            "global_new_cards_per_day": global_new,
+            "global_max_reviews_per_day": global_max,
+            # --- NEW: Pass global learning steps and graduating interval ---
+            "global_learning_steps": global_learning_steps,
+            "global_graduating_interval": global_graduating_interval,
+            # --- END NEW ---
+            "message": None
+        }
+    )
 
 @app.post("/settings/{deck_id}", response_class=HTMLResponse)
-async def update_deck_settings_submit(request: Request, deck_id: int, new_cards_per_day: Optional[str] = Form(None), max_reviews_per_day: Optional[str] = Form(None), learning_steps: Optional[str] = Form(None), graduating_interval: Optional[str] = Form(None), db: sqlite3.Connection = Depends(get_database)):
+async def update_deck_settings_submit(
+    request: Request,
+    deck_id: int,
+    new_cards_per_day: Optional[str] = Form(None),
+    max_reviews_per_day: Optional[str] = Form(None),
+    learning_steps: Optional[str] = Form(None),
+    graduating_interval: Optional[str] = Form(None),
+    db: sqlite3.Connection = Depends(get_database)
+):
     new_cards_val = int(new_cards_per_day) if new_cards_per_day else None
     max_reviews_val = int(max_reviews_per_day) if max_reviews_per_day else None
     graduating_interval_val = int(graduating_interval) if graduating_interval else None
@@ -202,17 +238,79 @@ async def update_deck_settings_submit(request: Request, deck_id: int, new_cards_
     deck = crud.get_deck(db, deck_id)
     global_new = crud.get_setting(db, "new_cards_per_day") or "5"
     global_max = crud.get_setting(db, "max_reviews_per_day") or "20"
-    return templates.TemplateResponse("settings_deck.html", {"request": request, "deck": deck, "global_new_cards_per_day": global_new, "global_max_reviews_per_day": global_max, "message": "Deck settings updated successfully!"})
+
+    # --- NEW: Fetch global learning steps and graduating interval for re-render ---
+    global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
+    global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4")
+    # --- END NEW ---
+
+    return templates.TemplateResponse(
+        "settings_deck.html",
+        {
+            "request": request,
+            "deck": deck,
+            "global_new_cards_per_day": global_new,
+            "global_max_reviews_per_day": global_max,
+            # --- NEW: Pass global learning steps and graduating interval ---
+            "global_learning_steps": global_learning_steps,
+            "global_graduating_interval": global_graduating_interval,
+            # --- END NEW ---
+            "message": "Deck settings updated successfully!"
+        }
+    )
 
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request, db: sqlite3.Connection = Depends(get_database)):
     current_new_cards_per_day = crud.get_setting(db, "new_cards_per_day") or "5"
     current_max_reviews_per_day = crud.get_setting(db, "max_reviews_per_day") or "20"
-    return templates.TemplateResponse("settings.html", {"request": request, "new_cards_per_day": current_new_cards_per_day, "max_reviews_per_day": current_max_reviews_per_day, "message": None})
+
+    # --- NEW: Fetch global learning steps and graduating interval ---
+    current_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
+    current_graduating_interval = crud.get_setting(db, "graduating_interval") or "4"
+    # --- END NEW ---
+
+    return templates.TemplateResponse(
+        "settings.html",
+        {
+            "request": request,
+            "new_cards_per_day": current_new_cards_per_day,
+            "max_reviews_per_day": current_max_reviews_per_day,
+            # --- NEW: Pass global learning steps and graduating interval ---
+            "learning_steps": current_learning_steps,
+            "graduating_interval": current_graduating_interval,
+            # --- END NEW ---
+            "message": None
+        }
+    )
 
 @app.post("/settings", response_class=HTMLResponse)
-async def update_settings(request: Request, new_cards_per_day: int = Form(...), max_reviews_per_day: int = Form(...), db: sqlite3.Connection = Depends(get_database)):
+async def update_settings(
+    request: Request,
+    new_cards_per_day: int = Form(...),
+    max_reviews_per_day: int = Form(...),
+    learning_steps: str = Form(...),
+    graduating_interval: int = Form(...),
+    db: sqlite3.Connection = Depends(get_database)
+):
     crud.set_setting(db, "new_cards_per_day", str(new_cards_per_day))
     crud.set_setting(db, "max_reviews_per_day", str(max_reviews_per_day))
+
+    # --- NEW: Update global learning steps and graduating interval ---
+    crud.set_setting(db, "learning_steps", learning_steps)
+    crud.set_setting(db, "graduating_interval", str(graduating_interval))
+    # --- END NEW ---
+
     message = "Settings updated successfully!"
-    return templates.TemplateResponse("settings.html", {"request": request, "new_cards_per_day": new_cards_per_day, "max_reviews_per_day": max_reviews_per_day, "message": message})
+    return templates.TemplateResponse(
+        "settings.html",
+        {
+            "request": request,
+            "new_cards_per_day": new_cards_per_day,
+            "max_reviews_per_day": max_reviews_per_day,
+            # --- NEW: Pass updated learning steps and graduating interval ---
+            "learning_steps": learning_steps,
+            "graduating_interval": graduating_interval,
+            # --- END NEW ---
+            "message": message
+        }
+    )
