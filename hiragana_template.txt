@@ -1,0 +1,61 @@
+<div class="hiragana-card" id="hiraganaCard">
+    <div class="hiragana-character">{{ card.data.character }}</div>
+    
+    <div class="hiragana-details" id="cardBack" style="display: none;">
+        <p><strong>Pronunciation:</strong> {{ card.data.pronounciation}}</p>
+        <p><strong>Example:</strong> {{ card.data.word }}</p>
+        <audio controls src="/media/{{ deck.media_folder }}/{{ card.data.audio }}">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+    <button type="button" id="toggleBtn" class="btn btn-show-hide">Show Answer</button>
+</div>
+
+
+
+.hiragana-card { 
+    background: white; 
+    padding: 40px; 
+    border-radius: 10px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+    display: inline-block; 
+    min-width: 300px; 
+    text-align: center;
+}
+
+.hiragana-character { 
+    font-size: 80px; 
+    margin-bottom: 20px; 
+    font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
+}
+
+.hiragana-details { 
+    margin-top: 20px; 
+    border-top: 1px solid #eee; 
+    padding-top: 20px; 
+}
+
+.hiragana-details p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.btn-show-hide { 
+    margin-top: 20px; 
+    background-color: #3498db; 
+    color: white; 
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-show-hide:hover {
+    background-color: #2980b9;
+}
+
+audio {
+    margin-top: 15px;
+    width: 250px;
+}

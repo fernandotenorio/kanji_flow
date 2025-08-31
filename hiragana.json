@@ -1,0 +1,290 @@
+[
+  {
+    "character": "あ",
+    "pronounciation": "a",
+    "word": "あか (red)",
+    "audio": "あ_a.mp3"
+  },
+  {
+    "character": "い",
+    "pronounciation": "i",
+    "word": "いえ (house)",
+    "audio": "い_i.mp3"
+  },
+  {
+    "character": "う",
+    "pronounciation": "u",
+    "word": "うみ (sea)",
+    "audio": "う_u.mp3"
+  },
+  {
+    "character": "え",
+    "pronounciation": "e",
+    "word": "えき (station)",
+    "audio": "え_e.mp3"
+  },
+  {
+    "character": "お",
+    "pronounciation": "o",
+    "word": "おかし (candy)",
+    "audio": "お_o.mp3"
+  },
+  {
+    "character": "か",
+    "pronounciation": "ka",
+    "word": "かお (face)",
+    "audio": "か_ka.mp3"
+  },
+  {
+    "character": "き",
+    "pronounciation": "ki",
+    "word": "き (tree)",
+    "audio": "き_ki.mp3"
+  },
+  {
+    "character": "く",
+    "pronounciation": "ku",
+    "word": "くつ (shoes)",
+    "audio": "く_ku.mp3"
+  },
+  {
+    "character": "け",
+    "pronounciation": "ke",
+    "word": "けーき (cake)",
+    "audio": "け_ke.mp3"
+  },
+  {
+    "character": "こ",
+    "pronounciation": "ko",
+    "word": "こども (child)",
+    "audio": "こ_ko.mp3"
+  },
+  {
+    "character": "さ",
+    "pronounciation": "sa",
+    "word": "さかな (fish)",
+    "audio": "さ_sa.mp3"
+  },
+  {
+    "character": "し",
+    "pronounciation": "shi",
+    "word": "しお (salt)",
+    "audio": "し_shi.mp3"
+  },
+  {
+    "character": "す",
+    "pronounciation": "su",
+    "word": "すし (sushi)",
+    "audio": "す_su.mp3"
+  },
+  {
+    "character": "せ",
+    "pronounciation": "se",
+    "word": "せんせい (teacher)",
+    "audio": "せ_se.mp3"
+  },
+  {
+    "character": "そ",
+    "pronounciation": "so",
+    "word": "そら (sky)",
+    "audio": "そ_so.mp3"
+  },
+  {
+    "character": "た",
+    "pronounciation": "ta",
+    "word": "たべもの (food)",
+    "audio": "た_ta.mp3"
+  },
+  {
+    "character": "ち",
+    "pronounciation": "chi",
+    "word": "ちいさい (small)",
+    "audio": "ち_chi.mp3"
+  },
+  {
+    "character": "つ",
+    "pronounciation": "tsu",
+    "word": "つき (moon)",
+    "audio": "つ_tsu.mp3"
+  },
+  {
+    "character": "て",
+    "pronounciation": "te",
+    "word": "て (hand)",
+    "audio": "て_te.mp3"
+  },
+  {
+    "character": "と",
+    "pronounciation": "to",
+    "word": "ともだち (friend)",
+    "audio": "と_to.mp3"
+  },
+  {
+    "character": "な",
+    "pronounciation": "na",
+    "word": "なまえ (name)",
+    "audio": "な_na.mp3"
+  },
+  {
+    "character": "に",
+    "pronounciation": "ni",
+    "word": "にく (meat)",
+    "audio": "に_ni.mp3"
+  },
+  {
+    "character": "ぬ",
+    "pronounciation": "nu",
+    "word": "ぬいぐるみ (stuffed animal)",
+    "audio": "ぬ_nu.mp3"
+  },
+  {
+    "character": "ね",
+    "pronounciation": "ne",
+    "word": "ねこ (cat)",
+    "audio": "ね_ne.mp3"
+  },
+  {
+    "character": "の",
+    "pronounciation": "no",
+    "word": "のむ (to drink)",
+    "audio": "の_no.mp3"
+  },
+  {
+    "character": "は",
+    "pronounciation": "ha",
+    "word": "はな (flower)",
+    "audio": "は_ha.mp3"
+  },
+  {
+    "character": "ひ",
+    "pronounciation": "hi",
+    "word": "ひと (person)",
+    "audio": "ひ_hi.mp3"
+  },
+  {
+    "character": "ふ",
+    "pronounciation": "fu",
+    "word": "ふね (ship)",
+    "audio": "ふ_fu.mp3"
+  },
+  {
+    "character": "へ",
+    "pronounciation": "he",
+    "word": "へや (room)",
+    "audio": "へ_he.mp3"
+  },
+  {
+    "character": "ほ",
+    "pronounciation": "ho",
+    "word": "ほん (book)",
+    "audio": "ほ_ho.mp3"
+  },
+  {
+    "character": "ま",
+    "pronounciation": "ma",
+    "word": "まち (town)",
+    "audio": "ま_ma.mp3"
+  },
+  {
+    "character": "み",
+    "pronounciation": "mi",
+    "word": "みず (water)",
+    "audio": "み_mi.mp3"
+  },
+  {
+    "character": "む",
+    "pronounciation": "mu",
+    "word": "むし (insect)",
+    "audio": "む_mu.mp3"
+  },
+  {
+    "character": "め",
+    "pronounciation": "me",
+    "word": "め (eye)",
+    "audio": "め_me.mp3"
+  },
+  {
+    "character": "も",
+    "pronounciation": "mo",
+    "word": "もも (peach)",
+    "audio": "も_mo.mp3"
+  },
+  {
+    "character": "や",
+    "pronounciation": "ya",
+    "word": "やま (mountain)",
+    "audio": "や_ya.mp3"
+  },
+  {
+    "character": "ゆ",
+    "pronounciation": "yu",
+    "word": "ゆき (snow)",
+    "audio": "ゆ_yu.mp3"
+  },
+  {
+    "character": "よ",
+    "pronounciation": "yo",
+    "word": "よる (night)",
+    "audio": "よ_yo.mp3"
+  },
+  {
+    "character": "ら",
+    "pronounciation": "ra",
+    "word": "らいねん (next year)",
+    "audio": "ら_ra.mp3"
+  },
+  {
+    "character": "り",
+    "pronounciation": "ri",
+    "word": "りんご (apple)",
+    "audio": "り_ri.mp3"
+  },
+  {
+    "character": "る",
+    "pronounciation": "ru",
+    "word": "るす (absence)",
+    "audio": "る_ru.mp3"
+  },
+  {
+    "character": "れ",
+    "pronounciation": "re",
+    "word": "れいぞうこ (refrigerator)",
+    "audio": "れ_re.mp3"
+  },
+  {
+    "character": "ろ",
+    "pronounciation": "ro",
+    "word": "ろく (six)",
+    "audio": "ろ_ro.mp3"
+  },
+  {
+    "character": "わ",
+    "pronounciation": "wa",
+    "word": "わたし (I/me)",
+    "audio": "わ_wa.mp3"
+  },
+  {
+    "character": "ゐ",
+    "pronounciation": "wi",
+    "word": "ゐ (obsolete wi)",
+    "audio": "ゐ_wi.mp3"
+  },
+  {
+    "character": "ゑ",
+    "pronounciation": "we",
+    "word": "ゑ (obsolete we)",
+    "audio": "ゑ_we.mp3"
+  },
+  {
+    "character": "を",
+    "pronounciation": "wo",
+    "word": "を (object particle)",
+    "audio": "を_wo.mp3"
+  },
+  {
+    "character": "ん",
+    "pronounciation": "n",
+    "word": "ほん (book)",
+    "audio": "ん_n.mp3"
+  }
+]
