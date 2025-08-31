@@ -179,6 +179,7 @@ def update_card_review_data(db: sqlite3.Connection, card: Card) -> Optional[Card
 
     # Convert introduction_date to ISO format if it exists
     intro_date_iso = card.introduction_date.isoformat() if card.introduction_date else None
+    last_reviewed_iso = card.last_reviewed_date.isoformat() if card.last_reviewed_date else None
 
     cursor.execute(
         """UPDATE cards SET
@@ -193,7 +194,7 @@ def update_card_review_data(db: sqlite3.Connection, card: Card) -> Optional[Card
            WHERE id = ?""",
         (
             card.next_review_date.isoformat(), card.interval_days, card.ease_factor,
-            card.reviews, card.last_reviewed_date.isoformat(), card.state,
+            card.reviews, last_reviewed_iso, card.state,
             card.learning_step, intro_date_iso, card.id
         )
     )
