@@ -18,8 +18,8 @@ def _row_to_card(row: sqlite3.Row) -> Optional[Card]:
 def create_deck(db: sqlite3.Connection, deck: DeckCreate) -> Deck:
     cursor = db.cursor()
     cursor.execute(
-        "INSERT INTO decks (name, card_template, card_css) VALUES (?, ?, ?)",
-        (deck.name, deck.card_template, deck.card_css)
+        "INSERT INTO decks (name, card_template, card_css, media_folder) VALUES (?, ?, ?, ?)",
+        (deck.name, deck.card_template, deck.card_css, deck.media_folder)
     )
     db.commit()
     deck_id = cursor.lastrowid

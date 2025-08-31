@@ -9,6 +9,7 @@ class DeckBase(BaseModel):
     name: str
     card_template: str
     card_css: str
+    media_folder: Optional[str] = None
     new_cards_per_day: Optional[int] = None
     max_reviews_per_day: Optional[int] = None
     learning_steps: Optional[str] = None      # e.g., "10 1440"

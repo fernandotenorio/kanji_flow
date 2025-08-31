@@ -32,13 +32,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Live Preview for Add Deck Page ---
+    const mediaFolderInput = document.getElementById('media_folder');
     const deckFileInput = document.getElementById('deck_file');
     const templateInput = document.getElementById('card_template');
     const cssInput = document.getElementById('card_css');
     const previewArea = document.getElementById('card-preview-area');
     const refreshPreviewBtn = document.getElementById('refreshPreviewBtn');
     
-    if (deckFileInput && templateInput && cssInput && previewArea) {
+    if (mediaFolderInput && deckFileInput && templateInput && cssInput && previewArea) {
         let previewCardData = null;
 
         // Function to handle the toggle logic for the preview card
@@ -66,10 +67,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const updatePreview = () => {
             if (!previewCardData) return;
 
+            const mediaFolder = mediaFolderInput.value || '';
             const templateStr = templateInput.value;
             const cssStr = cssInput.value;
 
-            let renderedHtml = templateStr.replace(/{{\s*card\.data\.(\w+)\s*}}/g, (match, key) => {
+            let processedTemplate = templateStr.replace(/{{\s*deck\.media_folder\s*}}/g, mediaFolder);
+
+            let renderedHtml = processedTemplate.replace(/{{\s*card\.data\.(\w+)\s*}}/g, (match, key) => {
                 return previewCardData[key] || `[${key} not found]`;
             });
             
@@ -124,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // 2. Listen for changes in the template and CSS textareas
+        mediaFolderInput.addEventListener('input', updatePreview);
         templateInput.addEventListener('input', updatePreview);
         cssInput.addEventListener('input', updatePreview);
     }
@@ -161,8 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Handle the final confirmation
-        confirmDeleteBtn.addEventListener('click', function() {
-            // Submit the form to perform the deletion
+        confirmDeleteBtn.addEventListener('click', function() {            
             deleteDeckForm.submit();
         });
     }

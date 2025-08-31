@@ -48,10 +48,8 @@ async def list_decks(request: Request, db: sqlite3.Connection = Depends(get_data
     global_new_cards = int(crud.get_setting(db, "new_cards_per_day") or "5")
     global_max_reviews = int(crud.get_setting(db, "max_reviews_per_day") or "20")
 
-    # --- NEW: Fetch global learning steps and graduating interval ---
     global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440" # Default as per sm2_algorithm
     global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4") # Default as per sm2_algorithm
-    # --- END NEW ---
     
     for deck in decks_raw:
         effective_new_cards = deck.new_cards_per_day or global_new_cards
@@ -80,31 +78,37 @@ async def add_deck_page(request: Request):
 async def add_deck_submit(
     request: Request,
     name: str = Form(...),
+    media_folder: str = Form(""),
     card_template: str = Form(...),
     card_css: str = Form(...),
     deck_file: UploadFile = File(...),
     db: sqlite3.Connection = Depends(get_database)
 ):
     try:
-        new_deck_model = models.DeckCreate(name=name, card_template=card_template, card_css=card_css)
+        # TODO validate valid folder name (or enforce naming rules)
+        media_folder_val = media_folder.strip() if media_folder else None
+
+        new_deck_model = models.DeckCreate(name=name, media_folder=media_folder_val, card_template=card_template, card_css=card_css)
         created_deck = crud.create_deck(db, new_deck_model)
         contents = await deck_file.read()
         cards_data = json.loads(contents)
+
         if not isinstance(cards_data, list):
             raise ValueError("JSON file must contain a list of card objects.")
+
         for card_item in cards_data:
             new_card_model = models.CardCreate(deck_id=created_deck.id, data=card_item)
             crud.create_card(db, new_card_model)
         return RedirectResponse(url="/decks", status_code=303)
     except sqlite3.IntegrityError:
         error = f"A deck with the name '{name}' already exists."
-        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "card_template": card_template, "card_css": card_css})
+        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "media_folder": media_folder, "card_template": card_template, "card_css": card_css})
     except (json.JSONDecodeError, ValueError) as e:
         error = f"Invalid JSON file: {e}"
-        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "card_template": card_template, "card_css": card_css})
+        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "media_folder": media_folder, "card_template": card_template, "card_css": card_css})
     except Exception as e:
         error = f"An unexpected error occurred: {e}"
-        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "card_template": card_template, "card_css": card_css})
+        return templates.TemplateResponse("add_deck.html", {"request": request, "error": error, "name": name, "media_folder": media_folder, "card_template": card_template, "card_css": card_css})
 
 @app.get("/study/{deck_id}", response_class=HTMLResponse)
 async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
@@ -116,10 +120,8 @@ async def study_deck(request: Request, deck_id: int, db: sqlite3.Connection = De
     global_new_cards = int(crud.get_setting(db, "new_cards_per_day") or "5")
     global_max_reviews = int(crud.get_setting(db, "max_reviews_per_day") or "20")
 
-    # --- NEW: Fetch global learning steps and graduating interval ---
     global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
     global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4")
-    # --- END NEW ---
 
     effective_new_cards = deck.new_cards_per_day or global_new_cards
     effective_max_reviews = deck.max_reviews_per_day or global_max_reviews
@@ -202,10 +204,8 @@ async def deck_settings_page(request: Request, deck_id: int, db: sqlite3.Connect
     global_new = crud.get_setting(db, "new_cards_per_day") or "5"
     global_max = crud.get_setting(db, "max_reviews_per_day") or "20"
 
-    # --- NEW: Fetch global learning steps and graduating interval ---
     global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
     global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4")
-    # --- END NEW ---
 
     return templates.TemplateResponse(
         "settings_deck.html",
@@ -214,10 +214,8 @@ async def deck_settings_page(request: Request, deck_id: int, db: sqlite3.Connect
             "deck": deck,
             "global_new_cards_per_day": global_new,
             "global_max_reviews_per_day": global_max,
-            # --- NEW: Pass global learning steps and graduating interval ---
             "global_learning_steps": global_learning_steps,
             "global_graduating_interval": global_graduating_interval,
-            # --- END NEW ---
             "message": None
         }
     )
@@ -240,10 +238,8 @@ async def update_deck_settings_submit(
     global_new = crud.get_setting(db, "new_cards_per_day") or "5"
     global_max = crud.get_setting(db, "max_reviews_per_day") or "20"
 
-    # --- NEW: Fetch global learning steps and graduating interval for re-render ---
     global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
     global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4")
-    # --- END NEW ---
 
     return templates.TemplateResponse(
         "settings_deck.html",
@@ -252,10 +248,8 @@ async def update_deck_settings_submit(
             "deck": deck,
             "global_new_cards_per_day": global_new,
             "global_max_reviews_per_day": global_max,
-            # --- NEW: Pass global learning steps and graduating interval ---
             "global_learning_steps": global_learning_steps,
             "global_graduating_interval": global_graduating_interval,
-            # --- END NEW ---
             "message": "Deck settings updated successfully!"
         }
     )

@@ -11,7 +11,7 @@
 {% block content %}
     {% if current_card %}
         <div class="card-container">
-            {{ render_template_string(deck.card_template, card=current_card) | safe }}
+            {{ render_template_string(deck.card_template, card=current_card, deck=deck) | safe }}
 
             <div class="review-buttons" style="margin-top: 20px;">
                 <form action="/submit_review/{{ deck.id }}" method="post" style="display: inline;">

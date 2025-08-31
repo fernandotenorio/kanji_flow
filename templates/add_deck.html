@@ -20,10 +20,18 @@
                     <label for="name">Deck Name:</label>
                     <input type="text" id="name" name="name" value="{{ name or '' }}" autocomplete="off" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="media_folder">Media Folder Name (Optional):</label>
+                    <input type="text" id="media_folder" name="media_folder" value="{{ media_folder or '' }}" autocomplete="off">
+                    <small style="display: block; margin-top: 5px;">
+                        The name of the folder inside `/media/` where assets for this deck are stored. Leave blank if no media is used.
+                    </small>
+                </div>
                 
                 <div class="form-group">
                     <label for="card_template">Card Template (Jinja2 HTML):</label>
-                    <textarea id="card_template" name="card_template" rows="10" style="width: 100%; font-family: monospace; padding: 5px;" required>
+                    <textarea id="card_template" name="card_template" rows="14" style="width: 100%; font-family: monospace; padding: 5px;" required>
 {%- if card_template -%}
 {{- card_template -}}
 {%- else -%}
@@ -33,6 +41,10 @@
     
     <div class="kanji-meaning" id="cardBack" style="display: none;">
         <p><strong>Answer:</strong> {{ card.data.back }}</p>
+
+        <audio controls src="/media/{{ deck.media_folder }}/{{ card.data.audio }}">
+            Your browser does not support the audio element.
+        </audio>
     </div>
 
     <button type="button" id="toggleBtn" class="btn btn-show-hide">Show Answer</button>
@@ -40,7 +52,12 @@
 {%- endraw -%}
 {%- endif -%}
 </textarea>
-                <small>Use `{% raw %}{{ card.data.key }}{% endraw %}` to access card data.</small>
+                <small style="display: block;">
+                    Use `{% raw %}{{ card.data.key }}{% endraw %}` to access card data.
+                </small>
+                <small style="display: block;">
+                    For media src paths, use `{% raw %}/media/{{ deck.media_folder }}/{{ card.data.audio }}{% endraw %}`.
+                </small>
                 </div>
 
                 <div class="form-group">
@@ -56,14 +73,16 @@
 {%- endif -%}
 </textarea>
                 <small>Your card template will be wrapped around
-                    {{ '<div class="card-container" style="text-align: center;">html template</div>.' | e }}
+                    {{ '<div class="card-container" style="text-align: center;">card template</div>.' | e }}
                 </small>
                 </div>
                 
                 <div class="form-group">
                     <label for="deck_file">Deck Data (JSON file):</label>
                     <input type="file" id="deck_file" name="deck_file" accept=".json" required>
-                    <small>The file must be a JSON array of objects, e.g., `[{"front": "Q1", "back": "A1"}, ...]`</small>
+                    <small style="display: block; margin-top: 5px;">
+                        The file must be a JSON array of objects, e.g., `[{"front": "Q1", "back": "A1", "audio": "sound.mp3"}, ...]`
+                    </small>
                 </div>            
                 <button type="submit" class="btn btn-primary">Create Deck</button>
             </form>
@@ -72,8 +91,7 @@
 
     <!-- Right Column: Live Preview -->
     <div class="preview-column">
-        <div class="card">
-            <!-- <h3 style="margin-bottom: 5px;">Card Preview</h3> -->
+        <div class="card">            
              <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <span>Card Preview</span>
                 <button type="button" id="refreshPreviewBtn" title="Refresh Preview" class="btn btn-secondary" style="padding: 5px 10px; background-color: inherit; color: #95a5a6;"><i class="fas fa-redo"></i></button>

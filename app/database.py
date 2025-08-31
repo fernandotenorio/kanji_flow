@@ -26,6 +26,7 @@ def create_tables():
             name TEXT NOT NULL UNIQUE,
             card_template TEXT NOT NULL,
             card_css TEXT NOT NULL,
+            media_folder TEXT,
             new_cards_per_day INTEGER,
             max_reviews_per_day INTEGER,
             learning_steps TEXT,
