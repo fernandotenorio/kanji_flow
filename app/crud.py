@@ -36,14 +36,31 @@ def get_all_decks(db: sqlite3.Connection) -> List[Deck]:
     cursor.execute("SELECT * FROM decks")
     return [Deck.model_validate(dict(row)) for row in cursor.fetchall()]
 
-def update_deck_settings(db: sqlite3.Connection, deck_id: int, new_cards: Optional[int], max_reviews: Optional[int], learning_steps: Optional[str], graduating_interval: Optional[int]) -> Optional[Deck]:
+def update_deck_settings(db: sqlite3.Connection, deck_id: int, name: str, media_folder: Optional[str], new_cards: Optional[int], max_reviews: Optional[int], learning_steps: Optional[str], graduating_interval: Optional[int]) -> Optional[Deck]:
     cursor = db.cursor()
     cursor.execute(
         """UPDATE decks SET
-            new_cards_per_day = ?, max_reviews_per_day = ?,
-            learning_steps = ?, graduating_interval = ?
+            name = ?,
+            media_folder = ?,
+            new_cards_per_day = ?,
+            max_reviews_per_day = ?,
+            learning_steps = ?,
+            graduating_interval = ?
            WHERE id = ?""",
-        (new_cards, max_reviews, learning_steps, graduating_interval, deck_id)
+        (name, media_folder, new_cards, max_reviews, learning_steps, graduating_interval, deck_id)
+    )
+    db.commit()
+    return get_deck(db, deck_id)
+
+def update_deck_layout(db: sqlite3.Connection, deck_id: int, card_template: str, card_css: str) -> Optional[Deck]:
+    """Updates the layout-related fields for a specific deck."""
+    cursor = db.cursor()
+    cursor.execute(
+        """UPDATE decks SET            
+            card_template = ?,
+            card_css = ?
+           WHERE id = ?""",
+        (card_template, card_css, deck_id)
     )
     db.commit()
     return get_deck(db, deck_id)

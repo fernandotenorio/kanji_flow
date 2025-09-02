@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request, Depends, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
 import sqlite3
 import json
 from datetime import date, datetime
@@ -11,13 +13,16 @@ from app import crud, models
 from app.database import get_db, create_tables
 from app.srs_algorithm import sm2_algorithm
 
+class CardPreviewRequest(BaseModel):
+    template: str
+    css: str
+    sample_data: Dict[str, Any]
+    media_folder: Optional[str] = ""
+
 
 # Call create_tables once at startup
 create_tables()
-
 app = FastAPI()
-
-# --- NO MORE SESSION MIDDLEWARE ---
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/media", StaticFiles(directory="media"), name="media")
@@ -29,6 +34,32 @@ def render_template_string(template_string: str, **context) -> str:
     return template.render(**context)
 templates.env.globals['render_template_string'] = render_template_string
 # ---
+
+@app.post("/preview_card", response_class=HTMLResponse)
+async def preview_card(request: Request, preview_request: CardPreviewRequest):
+    """Renders a card preview based on template, CSS, and sample data."""
+    # We create a dummy deck object to pass to the template renderer
+    # This ensures {{ deck.media_folder }} works in the preview.
+    dummy_deck = {"media_folder": preview_request.media_folder}
+    
+    # We create a dummy card object
+    dummy_card = {"data": preview_request.sample_data}
+
+    # Render the card's inner HTML using the provided template string
+    inner_html = render_template_string(
+        preview_request.template, 
+        card=dummy_card, 
+        deck=dummy_deck
+    )
+    
+    # Combine everything into the final HTML to be sent to the browser
+    full_html = f"""
+        <style>{preview_request.css}</style>
+        <div class="card-container" style="text-align: center;">
+            {inner_html}
+        </div>
+    """
+    return HTMLResponse(content=full_html)
 
 # Dependency
 def get_database():
@@ -72,6 +103,69 @@ async def list_decks(request: Request, db: sqlite3.Connection = Depends(get_data
 @app.get("/add_deck", response_class=HTMLResponse)
 async def add_deck_page(request: Request):
     return templates.TemplateResponse("add_deck.html", {"request": request, "message": None, "error": None})
+
+
+@app.get("/decks/{deck_id}/edit_layout", response_class=HTMLResponse)
+async def edit_deck_layout_page(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
+    deck = crud.get_deck(db, deck_id)
+    if not deck:
+        return RedirectResponse(url="/decks")
+
+    # Fetch the first card of the deck to use as sample data for the preview
+    all_cards = crud.get_all_cards_in_deck(db, deck_id)
+    sample_card_data = all_cards[0].data if all_cards else {"front": "Sample Front", "back": "Sample Back", "audio": "sample.mp3"}
+
+    return templates.TemplateResponse(
+        "edit_deck_layout.html",
+        {
+            "request": request,
+            "deck": deck,
+            "sample_card_json": json.dumps(sample_card_data),
+            "message": None,
+            "error": None
+        }
+    )
+
+@app.post("/decks/{deck_id}/edit_layout", response_class=HTMLResponse)
+async def edit_deck_layout_submit(
+    request: Request,
+    deck_id: int,
+    card_template: str = Form(...),
+    card_css: str = Form(...),
+    db: sqlite3.Connection = Depends(get_database)
+):
+    try:
+        updated_deck = crud.update_deck_layout(db, deck_id, card_template, card_css)
+
+        # Refetch sample card data in case it's needed again
+        all_cards = crud.get_all_cards_in_deck(db, deck_id)
+        sample_card_data = all_cards[0].data if all_cards else {"front": "Sample Front", "back": "Sample Back"}
+
+        return templates.TemplateResponse(
+            "edit_deck_layout.html",
+            {
+                "request": request,
+                "deck": updated_deck,
+                "sample_card_json": json.dumps(sample_card_data),
+                "message": "Deck layout updated successfully!",
+                "error": None
+            }
+        )
+    except Exception as e:
+        deck = crud.get_deck(db, deck_id)
+        all_cards = crud.get_all_cards_in_deck(db, deck_id)
+        sample_card_data = all_cards[0].data if all_cards else {"front": "Sample Front", "back": "Sample Back"}
+        error = f"An unexpected error occurred: {e}"
+        return templates.TemplateResponse(
+            "edit_deck_layout.html",
+            {
+                "request": request,
+                "deck": deck,
+                "sample_card_json": json.dumps(sample_card_data),
+                "message": None,
+                "error": error
+            }
+        )
 
 # add_deck_submit POST endpoint remains largely the same, no changes needed here.
 @app.post("/add_deck", response_class=HTMLResponse)
@@ -199,8 +293,10 @@ async def deck_progress(request: Request, deck_id: int, db: sqlite3.Connection =
 @app.get("/settings/{deck_id}", response_class=HTMLResponse)
 async def deck_settings_page(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
     deck = crud.get_deck(db, deck_id)
+
     if not deck:
         return RedirectResponse(url="/decks")
+
     global_new = crud.get_setting(db, "new_cards_per_day") or "5"
     global_max = crud.get_setting(db, "max_reviews_per_day") or "20"
 
@@ -216,7 +312,8 @@ async def deck_settings_page(request: Request, deck_id: int, db: sqlite3.Connect
             "global_max_reviews_per_day": global_max,
             "global_learning_steps": global_learning_steps,
             "global_graduating_interval": global_graduating_interval,
-            "message": None
+            "message": None,
+            "error": None
         }
     )
 
@@ -224,20 +321,38 @@ async def deck_settings_page(request: Request, deck_id: int, db: sqlite3.Connect
 async def update_deck_settings_submit(
     request: Request,
     deck_id: int,
+    name: str = Form(...),
+    media_folder: Optional[str] = Form(None),
     new_cards_per_day: Optional[str] = Form(None),
     max_reviews_per_day: Optional[str] = Form(None),
     learning_steps: Optional[str] = Form(None),
     graduating_interval: Optional[str] = Form(None),
     db: sqlite3.Connection = Depends(get_database)
 ):
+    message = None
+    error = None
+    
+    # Prepare values for CRUD function
+    media_folder_val = media_folder.strip() if media_folder else None
     new_cards_val = int(new_cards_per_day) if new_cards_per_day else None
     max_reviews_val = int(max_reviews_per_day) if max_reviews_per_day else None
     graduating_interval_val = int(graduating_interval) if graduating_interval else None
-    crud.update_deck_settings(db, deck_id, new_cards_val, max_reviews_val, learning_steps, graduating_interval_val)
+
+    try:
+        crud.update_deck_settings(
+            db, deck_id, name, media_folder_val, new_cards_val,
+            max_reviews_val, learning_steps, graduating_interval_val
+        )
+        message = "Deck settings updated successfully!"
+    except sqlite3.IntegrityError:
+        error = f"A deck with the name '{name}' already exists. Please choose a different name."
+    except Exception as e:
+        error = f"An unexpected error occurred: {e}"
+
+    # Refetch data to display on the page
     deck = crud.get_deck(db, deck_id)
     global_new = crud.get_setting(db, "new_cards_per_day") or "5"
     global_max = crud.get_setting(db, "max_reviews_per_day") or "20"
-
     global_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
     global_graduating_interval = int(crud.get_setting(db, "graduating_interval") or "4")
 
@@ -250,7 +365,8 @@ async def update_deck_settings_submit(
             "global_max_reviews_per_day": global_max,
             "global_learning_steps": global_learning_steps,
             "global_graduating_interval": global_graduating_interval,
-            "message": "Deck settings updated successfully!"
+            "message": message,
+            "error": error
         }
     )
 
