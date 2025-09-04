@@ -16,11 +16,11 @@
             <div class="review-buttons" style="margin-top: 20px;">
                 <form action="/submit_review/{{ deck.id }}" method="post" style="display: inline;">
                     <input type="hidden" name="card_id" value="{{ current_card.id }}">
-                    <button type="submit" name="quality" value="1" class="btn btn-danger">Hard</button>
+                    <button type="submit" name="quality" value="1" class="btn btn-danger">Again</button>
                 </form>
                 <form action="/submit_review/{{ deck.id }}" method="post" style="display: inline;">
                     <input type="hidden" name="card_id" value="{{ current_card.id }}">
-                    <button type="submit" name="quality" value="3" class="btn btn-warning">Good</button>
+                    <button type="submit" name="quality" value="4" class="btn btn-warning">Good</button>
                 </form>
                 <form action="/submit_review/{{ deck.id }}" method="post" style="display: inline;">
                     <input type="hidden" name="card_id" value="{{ current_card.id }}">

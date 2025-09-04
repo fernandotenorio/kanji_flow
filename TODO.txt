@@ -1,3 +1,5 @@
-1-Tela para editar cards.
-2-Paginacao
+1-Tela browse cards (editar e deletar card individual)
+2-Adicionar novo card via UI (single) ou JSON (batch)
 3-Graficos e Estatisticas
+4-flag para quando clicar 'Again' em card aprendido? Implementar relearning steps?
+5-Exportar cards (json, csv)
