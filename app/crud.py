@@ -82,6 +82,23 @@ def get_all_cards_in_deck(db: sqlite3.Connection, deck_id: int) -> List[Card]:
     cursor.execute("SELECT * FROM cards WHERE deck_id = ?", (deck_id,))
     return [_row_to_card(row) for row in cursor.fetchall()]
 
+def update_card_data(db: sqlite3.Connection, card_id: int, card_data: Dict) -> Optional[Card]:
+    """Updates only the 'data' JSON field of a specific card."""
+    cursor = db.cursor()
+    data_json = json.dumps(card_data)
+    cursor.execute(
+        """UPDATE cards SET data = ? WHERE id = ?""",
+        (data_json, card_id)
+    )
+    db.commit()
+    return get_card(db, card_id)
+
+def get_total_card_count_in_deck(db: sqlite3.Connection, deck_id: int) -> int:
+    """Gets the total number of cards in a given deck, regardless of state."""
+    cursor = db.cursor()
+    cursor.execute("SELECT COUNT(*) FROM cards WHERE deck_id = ?", (deck_id,))
+    return cursor.fetchone()[0]
+
 def get_queue_counts(db: sqlite3.Connection, deck_id: int, new_card_limit: int) -> Dict[str, int]:
     """Gets the count of cards in each queue for a given deck."""
     cursor = db.cursor()

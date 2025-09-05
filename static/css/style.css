@@ -125,11 +125,13 @@ body {
     color: #34495e;
 }
 
-.stat-card p {
-    font-size: 2em;
-    font-weight: 700;
-    color: #2980b9;
-    margin: 0;
+.stat-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-card .deck-actions {
+    margin-top: auto;
 }
 
 .full-width-card {

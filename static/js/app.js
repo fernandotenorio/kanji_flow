@@ -1,6 +1,5 @@
 // static/js/app.js
 
-// --- START CHANGES ---
 /**
  * Finds a "Show Answer" button and its corresponding answer element within a given
  * container and attaches the toggle functionality.
@@ -130,43 +129,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Automatically trigger a preview on the edit page on load
     if (sampleCardDataSource) {
         fetchPreview();
-    }
-});
-// --- END CHANGES ---
-
-
-// --- Delete Deck Confirmation Modal ---
-document.addEventListener('DOMContentLoaded', () => {
-    const deleteDeckModal = document.getElementById('deleteDeckModal');
-    const deleteDeckBtn = document.getElementById('deleteDeckBtn');
-    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    const deleteDeckForm = document.getElementById('deleteDeckForm');
-    const modalDeckName = document.getElementById('modalDeckName');
-
-    if (deleteDeckBtn && deleteDeckModal && cancelDeleteBtn && confirmDeleteBtn && deleteDeckForm) {
-        deleteDeckBtn.addEventListener('click', (event) => {
-            event.preventDefault(); // Prevent form submission
-            const deckName = deleteDeckBtn.dataset.deckName;
-            if (modalDeckName) {
-                modalDeckName.textContent = deckName;
-            }
-            deleteDeckModal.classList.add('is-visible');
-        });
-
-        const closeModal = () => {
-            deleteDeckModal.classList.remove('is-visible');
-        };
-
-        cancelDeleteBtn.addEventListener('click', closeModal);
-        deleteDeckModal.addEventListener('click', (event) => {
-            if (event.target === deleteDeckModal) {
-                closeModal();
-            }
-        });
-
-        confirmDeleteBtn.addEventListener('click', () => {
-            deleteDeckForm.submit();
-        });
     }
 });

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block page_title %}Browse Cards: {{ deck.name }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/modal.css">
+{% endblock %}
+
+{% block content %}
+<div class="card full-width-card">
+    <h3>Card Browser</h3>
+    <p>View, edit, or delete cards in this deck. Changes to card data are immediate and cannot be undone.</p>
+    <a href="/decks" class="btn btn-secondary" style="margin-top: 10px; margin-bottom: 20px;">Back to Decks</a>
+    
+    {% if all_cards %}
+        <table class="progress-table">
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Card Data</th>
+                    <th style="width: 10%;">State</th>
+                    <th style="width: 15%;">Next Review</th>
+                    <th style="width: 25%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for card in all_cards %}
+                    <tr data-card-id="{{ card.id }}">
+                        {# Use a pre tag for readable JSON formatting and to preserve whitespace #}
+                        <td>
+                            <pre style="white-space: pre-wrap; word-break: break-all; margin: 0; font-family: monospace; background-color: #f9f9f9; padding: 10px; border-radius: 4px;">{{ card.data | tojson(indent=2) }}</pre>
+                        </td>
+                        <td>{{ card.state }}</td>
+                        <td>{{ card.next_review_date.strftime('%Y-%m-%d %H:%M') if card.next_review_date else 'N/A' }}</td>
+                        <td>
+                            <!-- Edit Button: Triggers the edit modal -->
+                            <button type="button" class="btn btn-warning js-edit-trigger"
+                                    data-card-id="{{ card.id }}"
+                                    data-card-data='{{ card.data | tojson }}'>
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <!-- Delete Button: Triggers the generic delete modal -->
+                            <button type="button" class="btn btn-danger js-delete-trigger"
+                                    data-card-id="{{ card.id }}"
+                                    data-item-name="Card #{{ card.id }}"
+                                    data-form-action="/card/{{ card.id }}/delete">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>This deck doesn't have any cards yet.</p>
+    {% endif %}
+</div>
+
+<!-- Edit Card Modal -->
+<div class="modal-overlay" id="editCardModal">
+    <div class="modal-content" style="text-align: left; max-width: 600px;">
+        <h3>Edit Card Data</h3>
+        <p>Modify the JSON data for this card below. Ensure the format is valid JSON.</p>
+        <form id="editCardForm" method="post">
+             <input type="hidden" name="deck_id" value="{{ deck.id }}">
+            <div class="form-group">
+                <textarea id="cardDataTextarea" name="card_data_json" rows="12" style="width: 100%; font-family: monospace; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+            </div>
+            <div class="modal-actions" style="justify-content: flex-end;">
+                <span id="editCardMessage" style="margin-right: auto; font-weight: bold;"></span>
+                <button type="button" class="btn btn-secondary js-modal-close">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Generic Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteItemModal">
+    <div class="modal-content">
+        <h3>Confirm Deletion</h3>
+        <p>Are you sure you want to delete <strong id="modalItemName">this item</strong>? This action cannot be undone.</p>
+        <form id="deleteItemForm" method="post">
+            <!-- This hidden input is for the delete card action to allow correct redirection -->
+            <input type="hidden" name="deck_id" value="{{ deck.id }}">
+            <div class="modal-actions">
+                <span id="deleteItemMessage" style="margin-right: auto; font-weight: bold;"></span>
+                <button type="button" class="btn btn-secondary js-modal-close">Cancel</button>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Yes, Delete It
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="/static/js/modal.js"></script>
+{% endblock %}

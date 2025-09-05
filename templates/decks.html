@@ -5,32 +5,48 @@
     <div class="dashboard-grid">
         {% if decks_with_counts %}
             {% for item in decks_with_counts %}
-                <div class="card stat-card">
-                    <h3>{{ item.deck.name }}</h3>
+                {% if item.total_card_count > 0 %}
+                    <div class="card stat-card">
+                        <h3>{{ item.deck.name }}</h3>
+                        
+                        <!-- Daily Limit Display -->
+                        <div class="daily-limit-info" title="Max Reviews Per Day setting for this deck">
+                            Reviews: {{item.reviews_done_today}} / {{ item.max_reviews_setting }}
+                        </div>
+                        <div class="daily-limit-info" title="New cards per day setting for this deck">
+                            New Cards: {{item.new_cards_rated_today}} / {{ item.new_cards_per_day_setting }}
+                        </div>
 
-                    <!-- Daily Limit Display -->
-                    <div class="daily-limit-info" title="Max Reviews Per Day setting for this deck">
-                        Reviews: {{item.reviews_done_today}} / {{ item.max_reviews_setting }}
-                    </div>
-                    <div class="daily-limit-info" title="New cards per day setting for this deck">
-                        New Cards: {{item.new_cards_rated_today}} / {{ item.new_cards_per_day_setting }}
-                    </div>
+                        <!-- Queue Counts -->
+                        <div class="queue-counts">
+                            <span class="new-count" title="New Cards">{{ item.counts.new }}</span>
+                            <span class="learn-count" title="Learning">{{ item.counts.learning }}</span>
+                            <span class="review-count" title="Due for Review">{{ item.counts.review }}</span>
+                        </div>
 
-                    <!-- Queue Counts -->
-                    <div class="queue-counts">
-                        <span class="new-count" title="New Cards">{{ item.counts.new }}</span>
-                        <span class="learn-count" title="Learning">{{ item.counts.learning }}</span>
-                        <span class="review-count" title="Due for Review">{{ item.counts.review }}</span>
+                        <!-- Action Buttons -->
+                        <div class="deck-actions">
+                            <a href="/study/{{ item.deck.id }}" class="btn btn-primary"><i class="fas fa-book-open"></i> Study</a>
+                            <a href="/decks/{{ item.deck.id }}/browse" class="btn btn-secondary"><i class="fas fa-search"></i> Browse</a>
+                            <a href="/progress/{{ item.deck.id }}" class="btn btn-secondary"><i class="fas fa-chart-line"></i> Progress</a>
+                            <a href="/decks/{{ item.deck.id }}/edit_layout" class="btn btn-secondary" style="background-color: #95a5a6;"><i class="fas fa-palette"></i> Layout</a>
+                            <a href="/settings/{{ item.deck.id }}" class="btn btn-secondary" style="background-color: #7f8c8d;"> <i class="fas fa-cog"></i> Settings</a>
+                        </div>
                     </div>
-
-                    <!-- Action Buttons -->
-                    <div class="deck-actions">
-                        <a href="/study/{{ item.deck.id }}" class="btn btn-primary"><i class="fas fa-book-open"></i> Study</a>
-                        <a href="/progress/{{ item.deck.id }}" class="btn btn-secondary"><i class="fas fa-chart-line"></i> Progress</a>
-                        <a href="/decks/{{ item.deck.id }}/edit_layout" class="btn btn-secondary" style="background-color: #95a5a6;"><i class="fas fa-palette"></i> Layout</a>
-                        <a href="/settings/{{ item.deck.id }}" class="btn btn-secondary" style="background-color: #7f8c8d;"> <i class="fas fa-cog"></i> Settings</a>
+                {% else %}
+                    <!-- No cards in this deck -->
+                    <div class="card stat-card">                                              
+                        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+                            <p style="font-size: 1.5em; color: #7f8c8d;">This deck is empty.</p>
+                        </div>
+                        <!-- Action Buttons -->
+                        <div class="deck-actions">
+                            <a href="#" class="btn btn-primary"><i class="fas fa-plus"></i> Add Cards</a>                                                                                    
+                            <a href="/decks/{{ item.deck.id }}/edit_layout" class="btn btn-secondary" style="background-color: #95a5a6;"><i class="fas fa-palette"></i> Layout</a>
+                            <a href="/settings/{{ item.deck.id }}" class="btn btn-secondary" style="background-color: #7f8c8d;"> <i class="fas fa-cog"></i> Settings</a>
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             {% endfor %}
         {% else %}
              <div class="card full-width-card">

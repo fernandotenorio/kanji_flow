@@ -2,6 +2,10 @@
 
 {% block page_title %}Edit Layout: {{ deck.name }}{% endblock %}
 
+{% block extra_css %}
+    <link rel="stylesheet" href="/static/css/modal.css">
+{% endblock %}
+
 {% block content %}
 <div class="add-deck-container">
     <!-- This hidden div will hold the sample card data for the JS preview -->

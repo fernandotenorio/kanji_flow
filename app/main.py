@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Depends, Form, UploadFile, File
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -89,9 +89,12 @@ async def list_decks(request: Request, db: sqlite3.Connection = Depends(get_data
         new_cards_rated_today = crud.get_new_cards_rated_today(db, deck.id)
 
         counts = crud.get_queue_counts(db, deck.id, effective_new_cards)
+        total_card_count = crud.get_total_card_count_in_deck(db, deck.id)
+
         decks_with_counts.append({
             "deck": deck,
             "counts": counts,
+            "total_card_count": total_card_count,
             "max_reviews_setting": effective_max_reviews,
             "new_cards_per_day_setting": effective_new_cards,
             "reviews_done_today": reviews_done_today,
@@ -281,6 +284,77 @@ async def submit_review(
     return RedirectResponse(url=f"/study/{deck_id}", status_code=303)        
 
 
+@app.get("/decks/{deck_id}/browse", response_class=HTMLResponse)
+async def browse_deck_cards(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
+    deck = crud.get_deck(db, deck_id)
+    if not deck:
+        return RedirectResponse(url="/decks")
+    
+    all_cards = crud.get_all_cards_in_deck(db, deck_id)
+    
+    # Sort cards by their creation ID by default
+    all_cards_sorted = sorted(all_cards, key=lambda c: c.id)
+
+    return templates.TemplateResponse(
+        "browse_deck.html",
+        {
+            "request": request,
+            "deck": deck,
+            "all_cards": all_cards_sorted
+        }
+    )
+
+@app.post("/card/{card_id}/edit")
+async def edit_card_data(
+    card_id: int,
+    deck_id: int = Form(...),
+    card_data_json: str = Form(...),
+    db: sqlite3.Connection = Depends(get_database)
+):
+    try:
+        # Validate that the submitted string is valid JSON
+        new_data = json.loads(card_data_json)
+        crud.update_card_data(db, card_id, new_data)
+        return JSONResponse(content={
+            "status": "success", 
+            "message": "Card updated successfully!",
+            "card_data": new_data
+        })
+    except json.JSONDecodeError:
+        return JSONResponse(status_code=400, content={
+            "status": "error",
+            "message": "Update failed. Invalid JSON format provided."
+        })
+    except Exception as e:
+        return JSONResponse(status_code=500, content={
+            "status": "error",
+            "message": f"An unexpected server error occurred: {e}"
+        })
+
+@app.post("/card/{card_id}/delete")
+async def delete_card_submit(
+    card_id: int,
+    deck_id: int = Form(...),
+    db: sqlite3.Connection = Depends(get_database)
+):
+    try:
+        card = crud.get_card(db, card_id)
+        if not card:
+            return JSONResponse(status_code=404, content={
+                "status": "error",
+                "message": "Card not found. It may have already been deleted."
+            })
+        crud.delete_card(db, card_id)
+        return JSONResponse(content={
+            "status": "success",
+            "message": "Card deleted successfully."
+        })
+    except Exception as e:
+        return JSONResponse(status_code=500, content={
+            "status": "error",
+            "message": f"An unexpected server error occurred: {e}"
+        })
+
 @app.get("/progress/{deck_id}", response_class=HTMLResponse)
 async def deck_progress(request: Request, deck_id: int, db: sqlite3.Connection = Depends(get_database)):
     deck = crud.get_deck(db, deck_id)
@@ -380,10 +454,8 @@ async def settings_page(request: Request, db: sqlite3.Connection = Depends(get_d
     current_new_cards_per_day = crud.get_setting(db, "new_cards_per_day") or "5"
     current_max_reviews_per_day = crud.get_setting(db, "max_reviews_per_day") or "20"
 
-    # --- NEW: Fetch global learning steps and graduating interval ---
     current_learning_steps = crud.get_setting(db, "learning_steps") or "10 1440"
     current_graduating_interval = crud.get_setting(db, "graduating_interval") or "4"
-    # --- END NEW ---
 
     return templates.TemplateResponse(
         "settings.html",
@@ -391,10 +463,8 @@ async def settings_page(request: Request, db: sqlite3.Connection = Depends(get_d
             "request": request,
             "new_cards_per_day": current_new_cards_per_day,
             "max_reviews_per_day": current_max_reviews_per_day,
-            # --- NEW: Pass global learning steps and graduating interval ---
             "learning_steps": current_learning_steps,
             "graduating_interval": current_graduating_interval,
-            # --- END NEW ---
             "message": None
         }
     )
@@ -411,10 +481,8 @@ async def update_settings(
     crud.set_setting(db, "new_cards_per_day", str(new_cards_per_day))
     crud.set_setting(db, "max_reviews_per_day", str(max_reviews_per_day))
 
-    # --- NEW: Update global learning steps and graduating interval ---
     crud.set_setting(db, "learning_steps", learning_steps)
     crud.set_setting(db, "graduating_interval", str(graduating_interval))
-    # --- END NEW ---
 
     message = "Settings updated successfully!"
     return templates.TemplateResponse(
@@ -423,10 +491,8 @@ async def update_settings(
             "request": request,
             "new_cards_per_day": new_cards_per_day,
             "max_reviews_per_day": max_reviews_per_day,
-            # --- NEW: Pass updated learning steps and graduating interval ---
             "learning_steps": learning_steps,
             "graduating_interval": graduating_interval,
-            # --- END NEW ---
             "message": message
         }
     )

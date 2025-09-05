@@ -57,25 +57,35 @@
     <div class="card form-card" style="margin-top: 20px; border-top: 3px solid #e74c3c;">
         <h3>Danger Zone</h3>
         <p>Deleting a deck is permanent and cannot be undone. All cards and review history associated with this deck will be lost.</p>
-        <form action="/delete_deck/{{ deck.id }}" method="post" id="deleteDeckForm" style="margin-top: 15px;">
-             <!-- The button is now a trigger, not a submit button. It holds the deck name in a data attribute. -->
-             <button type="button" id="deleteDeckBtn" class="btn btn-danger" data-deck-name="{{ deck.name }}">
+        <div style="margin-top: 15px;">
+             <!-- The button is now a generic trigger, not part of a form -->
+             <button type="button" class="btn btn-danger js-delete-trigger"
+                    data-item-name="'{{ deck.name }}' deck"
+                    data-form-action="/delete_deck/{{ deck.id }}">
                 <i class="fas fa-trash-alt"></i> Delete This Deck
             </button>
-        </form>
-    </div>
-
-    <!-- NEW: Custom Confirmation Modal -->
-    <div class="modal-overlay" id="deleteDeckModal">
-        <div class="modal-content">
-            <h3>Confirm Deletion</h3>
-            <p>Are you absolutely sure you want to delete the <strong id="modalDeckName"></strong> deck? This action cannot be undone.</p>
-            <div class="modal-actions">
-                <button type="button" id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
-                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">
-                    <i class="fas fa-trash-alt"></i> Yes, Delete It
-                </button>
-            </div>
         </div>
     </div>
+
+    <!-- Generic Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteItemModal">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete <strong id="modalItemName">this item</strong>? This action cannot be undone.</p>
+            <!-- The form action will be set by JavaScript -->
+            <form id="deleteItemForm" action="" method="post">
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary js-modal-close">Cancel</button>
+                    <!-- This button now submits the form -->
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> Yes, Delete It
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="/static/js/modal.js"></script>
 {% endblock %}
