@@ -112,11 +112,12 @@ def get_queue_counts(db: sqlite3.Connection, deck_id: int, new_card_limit: int) 
     )
     learning_count = cursor.fetchone()[0]
 
-    # Review cards due today
+    # Review cards due today. Uses date(next_review_date) instead of just next_review_date.
     cursor.execute(
-        "SELECT * FROM cards WHERE deck_id = ? AND state = 'review' AND next_review_date <= ?",
+        "SELECT * FROM cards WHERE deck_id = ? AND state = 'review' AND date(next_review_date) <= ?",
         (deck_id, today_iso)
     )
+    
     review_count = len(cursor.fetchall())
 
     # New cards available today

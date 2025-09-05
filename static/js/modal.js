@@ -123,8 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Clear any previous messages
-                deleteMessageEl.textContent = '';
-                deleteMessageEl.style.color = '';
+                if (deleteMessageEl) {
+                    deleteMessageEl.textContent = '';
+                    deleteMessageEl.style.color = '';
+                }
 
                 // Show the modal.
                 deleteItemModal.classList.add('is-visible');
@@ -135,8 +137,10 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteItemForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             
-            deleteMessageEl.textContent = 'Deleting...';
-            deleteMessageEl.style.color = '#7f8c8d';
+            if (deleteMessageEl) {
+                deleteMessageEl.textContent = 'Deleting...';
+                deleteMessageEl.style.color = '#7f8c8d';
+            }
 
             try {
                 const response = await fetch(deleteItemForm.action, {
